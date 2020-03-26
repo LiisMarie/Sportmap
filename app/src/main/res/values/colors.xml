@@ -3,4 +3,15 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+
+    <color name="colorControlButton">#009688</color>
+    <color name="colorControlButtonText">#e0f2f1</color>
+
+    <color name="colorWCPButton">#80cbc4</color>
+
+    <color name="colorStartButton">#ccff90</color>
+    <color name="colorStopButton">#e57373</color>
+
+
+
 </resources>

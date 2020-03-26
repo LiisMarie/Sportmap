@@ -43,9 +43,9 @@
         android:id="@+id/imageButtonCP"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:backgroundTint="@color/colorWCPButton"
         android:src="@drawable/baseline_outlined_flag_black_24"
-        app:srcCompat="@drawable/baseline_outlined_flag_black_24"
-        />
+        app:srcCompat="@drawable/baseline_outlined_flag_black_24" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -84,39 +84,39 @@
         android:id="@+id/imageButtonWP"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:backgroundTint="@color/colorWCPButton"
         android:src="@drawable/baseline_filter_vintage_black_24"
-        app:srcCompat="@drawable/baseline_filter_vintage_black_24"
-    />
+        app:srcCompat="@drawable/baseline_filter_vintage_black_24" />
 
-<LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent"
-    android:layout_weight="1"
-    android:gravity="right"
-    android:layout_marginRight="8dp"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/textViewWPDirect"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        android:textSize="14sp" />
+        android:layout_height="match_parent"
+        android:layout_marginRight="8dp"
+        android:layout_weight="1"
+        android:gravity="right"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textViewWPTotal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/textViewWPDirect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/textViewWPTempo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/textViewWPTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="14sp" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/textViewWPTempo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="14sp" />
+
+    </LinearLayout>
 
 </LinearLayout>

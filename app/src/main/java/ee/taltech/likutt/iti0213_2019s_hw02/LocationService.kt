@@ -48,8 +48,6 @@ class LocationService : Service() {
     private var distanceWPTotal = 0f
     private var locationWP: Location? = null
 
-
-
     override fun onCreate() {
         Log.d(TAG, "onCreate")
         super.onCreate()

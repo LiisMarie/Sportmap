@@ -11,12 +11,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -26,9 +28,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.track_control.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -43,6 +45,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private var locationServiceActive = false
+
+    private var mapCentered = true
+    private var compassOn = true
+
+    private val startButtonColor = Color.parseColor("#9ccc65")
+    private val stopButtonColor = Color.parseColor("#e57373")
+
 
 
     // ============================================== MAIN ENTRY - ONCREATE =============================================
@@ -66,15 +75,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        imageButtonCP.setOnClickListener {buttonCPOnClick()}
+        imageButtonWP.setOnClickListener {buttonWPOnClick()}
+
+        buttonStartStop.setBackgroundColor(startButtonColor)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        //val sydney = LatLng(-34.0, 151.0)
+        //mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+
+        mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.isMyLocationEnabled = true
+
+        val currentLatLng = LatLng(59.4367, 24.7533)
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in on given loc
     }
 
     // ============================================== LIFECYCLE CALLBACKS =============================================
@@ -232,6 +251,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             stopService(Intent(this, LocationService::class.java))
 
             buttonStartStop.text = "START"
+            buttonStartStop.setBackgroundColor(startButtonColor)
+
         } else {
             if (Build.VERSION.SDK_INT >= 26) {
                 // starting the FOREGROUND service
@@ -241,43 +262,63 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 startService(Intent(this, LocationService::class.java))
             }
             buttonStartStop.text = "STOP"
-
-            // ==================START NOTIFICATION==============
-            /*
-            val intentCp = Intent(C.NOTIFICATION_ACTION_CP)
-            val intentWp = Intent(C.NOTIFICATION_ACTION_WP)
-
-            val pendingIntentCp = PendingIntent.getBroadcast(this, 0, intentCp, 0)
-            val pendingIntentWp = PendingIntent.getBroadcast(this, 0, intentWp, 0)
-
-            val notifyView = RemoteViews(packageName, R.layout.track_control)
-
-            notifyView.setOnClickPendingIntent(R.id.imageButtonCP, pendingIntentCp)
-            notifyView.setOnClickPendingIntent(R.id.imageButtonWP, pendingIntentWp)
-
-            var builder = NotificationCompat.Builder(this, C.NOTIFICATION_CHANNEL)
-                .setSmallIcon(R.drawable.outline_room_24)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setContent(notifyView)
-
-            NotificationManagerCompat.from(this).notify(1, builder.build())
-             */
-            // ==================END NOTIFICATION==============
+            buttonStartStop.setBackgroundColor(stopButtonColor)
         }
 
         locationServiceActive = !locationServiceActive
     }
 
-    fun buttonWPOnClick(view: View) {
+    fun buttonWPOnClick() {
         Log.d(TAG, "buttonWPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_WP))
     }
 
-    fun buttonCPOnClick(view: View) {
+    fun buttonCPOnClick() {
         Log.d(TAG, "buttonCPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_CP))
     }
+
+    fun buttonCenteredOnClick(view: View) {
+        Log.d(TAG, "buttonCenteredOnClick")
+        if (!mapCentered) {
+            buttonCentered.text = "Centered"
+            mapCentered = true
+        } else {
+            buttonCentered.text = "Not centered"
+            mapCentered = false
+        }
+    }
+
+    fun buttonDirectionOnClick(view: View) {
+        Log.d(TAG, "buttonDirectionOnClick")
+        // todo logic
+        if (buttonDirection.text == "North-up") {
+            buttonDirection.text = "Direction up"
+        } else if (buttonDirection.text == "Direction up") {
+            buttonDirection.text = "User chosen-up"
+        } else {
+            buttonDirection.text = "North-up"
+        }
+    }
+
+    fun buttonCompassOnClick(view: View) {
+        Log.d(TAG, "buttonCompassOnClick")
+        // todo logic
+        if (compassOn) {
+            compassOn = false
+            imageButton.setImageResource(R.drawable.baseline_explore_off_white_24)
+        } else {
+            compassOn = true
+            imageButton.setImageResource(R.drawable.baseline_explore_white_24)
+
+        }
+    }
+
+    fun buttonMenuOnClick(view: View) {
+        Log.d(TAG, "buttonMenuOnClick")
+        // todo open menu
+    }
+
 
     // ============================================== BROADCAST RECEIVER =============================================
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
@@ -287,11 +328,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 C.LOCATION_UPDATE_ACTION -> {
                     textViewLatitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString()
                     textViewLongitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString()
+
+                    if (intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString() != "0.0" &&
+                        intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString() != "0.0") {
+                        val currentLatLng = LatLng(intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0), intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0))
+                        if (mapCentered) {
+                            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
+                            mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
+                        }
+                    }
+
                 }
             }
         }
-
     }
-
 
 }
