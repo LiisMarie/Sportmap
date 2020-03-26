@@ -13,82 +13,87 @@
         layout="@layout/activity_maps"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteY="100dp" />
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
 
+    <include
+        android:id="@+id/includeCompass"
+        layout="@layout/compass"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/includeTrackControl"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <include
         android:id="@+id/includeTrackControl"
         layout="@layout/track_control"
         android:layout_width="0dp"
         android:layout_height="64dp"
-        android:layout_marginStart="4dp"
-        app:layout_constraintStart_toEndOf="@+id/buttonStartStop"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Latitude"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonStartStop" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:text="Longitude"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <TextView
-        android:id="@+id/textViewLatitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="16dp"
-        android:text="-"
-        app:layout_constraintStart_toEndOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/buttonStartStop" />
-
-    <TextView
-        android:id="@+id/textViewLongitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="20dp"
-        android:text="-"
-        app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/textViewLatitude" />
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/includeMap"
+        app:layout_constraintStart_toEndOf="@+id/buttonStartStop" />
 
     <Button
         android:id="@+id/buttonStartStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="8dp"
         android:onClick="buttonStartStopOnClick"
         android:text="Start"
-        app:layout_constraintBottom_toBottomOf="@+id/includeTrackControl"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/includeTrackControl" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:text="Latitude"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="74dp" />
+
+    <TextView
+        android:id="@+id/textViewLatitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="-"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        tools:layout_editor_absoluteY="74dp" />
+
+    <TextView
+        android:id="@+id/textViewLongitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="-"
+        app:layout_constraintStart_toEndOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLatitude" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="16dp"
+        android:text="Longitude"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <Button
         android:id="@+id/buttonDirection"
         style="@style/controlButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="8dp"
         android:maxWidth="100dp"
         android:minHeight="50dp"
         android:onClick="buttonDirectionOnClick"
-        android:text="Direction"
+        android:text="North-up"
         app:backgroundTint="@color/colorControlButton"
-        app:layout_constraintBottom_toBottomOf="@+id/includeTrackControl"
-        app:layout_constraintStart_toEndOf="@+id/includeTrackControl"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
@@ -98,7 +103,7 @@
         android:layout_marginStart="4dp"
         android:backgroundTint="@color/colorControlButton"
         android:onClick="buttonCompassOnClick"
-        app:layout_constraintBottom_toBottomOf="@+id/includeTrackControl"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonCentered"
         app:layout_constraintStart_toEndOf="@+id/buttonCentered"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/baseline_explore_white_24" />
@@ -111,7 +116,7 @@
         android:backgroundTint="@color/colorControlButton"
         android:onClick="buttonMenuOnClick"
         android:src="@drawable/round_menu_white_24"
-        app:layout_constraintBottom_toBottomOf="@+id/includeTrackControl"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonCentered"
         app:layout_constraintStart_toEndOf="@+id/imageButton"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/round_menu_white_24" />
@@ -127,7 +132,6 @@
         android:onClick="buttonCenteredOnClick"
         android:text="Centered"
         app:backgroundTint="@color/colorControlButton"
-        app:layout_constraintBottom_toBottomOf="@+id/includeTrackControl"
         app:layout_constraintStart_toEndOf="@+id/buttonDirection"
         app:layout_constraintTop_toTopOf="parent" />
 
