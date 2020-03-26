@@ -1,0 +1,55 @@
+image: jangrewe/gitlab-ci-android:latest
+
+variables:
+  #Change it to SCREENSHOT or ESPRESSO
+  REPORT_TYPE: $SCREENSHOT
+  #
+  #DO NOT MODIFY THESE VALUES
+  #
+  ROOT_PATH: "/Users/testlab/testlab"
+  SUB_TOKEN: "EpCPqziF"
+  BUILDS_PATH: "$ROOT_PATH/builds/$SUB_TOKEN/0/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
+  TESTLAB_RUNNER_PATH: "$ROOT_PATH/jar/TestlabRunner.jar"
+  SPOON_RUNNER_PATH: "$ROOT_PATH/jar/libs/SpoonRunner.jar"
+  SCREENSHOT: "pdf" #use it for screenshot tests
+  ESPRESSO: "html" #use it for espresso testing
+
+cache:
+  policy: pull
+  key: ${CI_PROJECT_ID}
+  paths:
+    - .gradle/
+
+stages:
+  - build
+  - test
+
+assemble:
+  when: manual
+  allow_failure: false
+  stage: build
+  tags:
+    - androidRunner
+  before_script:
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew assemble
+    - ./gradlew assembleAndroidTest
+  artifacts:
+    paths:
+      - app/build/outputs/apk
+
+install:
+  variables:
+    GIT_STRATEGY: none
+  stage: test
+  dependencies:
+    - assemble
+  tags:
+    - testlabRunner
+  script:
+    - java -jar $TESTLAB_RUNNER_PATH --apk "$BUILDS_PATH/app/build/outputs/apk/debug/app-debug.apk" --debugApk "$BUILDS_PATH/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk" --outputFolderPath "$BUILDS_PATH/outputs/" --spoonRunnerPath "$SPOON_RUNNER_PATH" --api "0" --report "$REPORT_TYPE"
+  artifacts:
+    paths:
+      - $BUILDS_PATH/outputs
