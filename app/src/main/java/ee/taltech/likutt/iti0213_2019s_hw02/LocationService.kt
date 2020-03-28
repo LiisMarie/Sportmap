@@ -15,6 +15,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.time.ExperimentalTime
+import kotlin.time.hours
 
 class LocationService : Service() {
     companion object {
@@ -166,6 +170,8 @@ class LocationService : Service() {
         val intent = Intent(C.LOCATION_UPDATE_ACTION)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
+        timer.cancel()
+        curSpentTime = null
     }
 
     override fun onLowMemory() {
@@ -189,12 +195,32 @@ class LocationService : Service() {
         distanceWPDirect = 0f
         distanceWPTotal = 0f
 
+        timer.schedule(task, 0, 1000)
 
         showNotification()
 
         return START_STICKY
         //return super.onStartCommand(intent, flags, startId)
     }
+
+    val timer = java.util.Timer()
+    val task = object: TimerTask() {
+        var timesRan = 0
+        var startTime = SimpleDateFormat("hh:mm:ss").format(Date())
+        var startTimee = Date()
+        override fun run() {
+            println("timer passed ${++timesRan} time(s)")
+            var seconds : Int = ((Date().time - startTimee.time) * 0.001).toInt()
+            val hours = seconds / 3600
+            seconds %= 3600
+            val minutes = seconds / 60
+            seconds %= 60
+            curSpentTime = "$hours:$minutes:$seconds"
+            showNotification()
+        }
+    }
+
+    var curSpentTime: String? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         Log.d(TAG, "onBind")
@@ -226,15 +252,35 @@ class LocationService : Service() {
         notifyview.setOnClickPendingIntent(R.id.imageButtonCP, pendingIntentCp)
         notifyview.setOnClickPendingIntent(R.id.imageButtonWP, pendingIntentWp)
 
+        // TODO duration, distance, tempo
 
-        notifyview.setTextViewText(R.id.textViewOverallDirect, "%.2f".format(distanceOverallDirect))
         notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
+        notifyview.setTextViewText(R.id.textViewOverallDuration, curSpentTime)
 
         notifyview.setTextViewText(R.id.textViewWPDirect, "%.2f".format(distanceWPDirect))
         notifyview.setTextViewText(R.id.textViewWPTotal, "%.2f".format(distanceWPTotal))
 
         notifyview.setTextViewText(R.id.textViewCPDirect, "%.2f".format(distanceCPDirect))
         notifyview.setTextViewText(R.id.textViewCPTotal, "%.2f".format(distanceCPTotal))
+
+        // start updating main
+        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        intent.putExtra(C.DISTANCE_OVERALL_TOTAL, "%.2f".format(distanceOverallTotal))
+        if (curSpentTime != null) {
+            intent.putExtra(C.DISTANCE_OVERALL_DURATION, curSpentTime)
+        }
+        intent.putExtra(C.DISTANCE_OVERALL_TEMPO, "tempo")
+
+        intent.putExtra(C.DISTANCE_WP_TOTAL, "%.2f".format(distanceWPTotal))
+        intent.putExtra(C.DISTANCE_WP_DIRECT, "%.2f".format(distanceWPDirect))
+        intent.putExtra(C.DISTANCE_WP_TEMPO, "tempo")
+
+        intent.putExtra(C.DISTANCE_CP_TOTAL, "%.2f".format(distanceCPTotal))
+        intent.putExtra(C.DISTANCE_CP_DIRECT, "%.2f".format(distanceCPDirect))
+        intent.putExtra(C.DISTANCE_CP_TEMPO, "tempo")
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        // end updating main
 
         // construct and show notification
         var builder = NotificationCompat.Builder(applicationContext,

@@ -14,6 +14,21 @@ class C {
         val NOTIFICATION_ID = 4321
         val REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
+        val DISTANCE_OVERALL_TOTAL = "distanceOverallTotal"
+        val DISTANCE_OVERALL_DURATION = "distanceOverallDuration"
+        val DISTANCE_OVERALL_TEMPO = "distanceOverallTempo"
+
+        val DISTANCE_WP_TOTAL = "distanceWPTotal"
+        val DISTANCE_WP_DIRECT = "distanceWPDirect"
+        val DISTANCE_WP_TEMPO = "distanceWPTempo"
+
+
+        val DISTANCE_CP_TOTAL = "distanceCPTotal"
+        val DISTANCE_CP_DIRECT = "distanceCPDirect"
+        val DISTANCE_CP_TEMPO = "distanceCPTempo"
+
+
+
 
     }
 }

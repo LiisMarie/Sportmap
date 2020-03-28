@@ -37,10 +37,16 @@ import kotlinx.android.synthetic.main.track_control.*
 import android.hardware.Sensor.TYPE_ACCELEROMETER
 import android.hardware.Sensor.TYPE_MAGNETIC_FIELD
 import android.hardware.SensorManager.SENSOR_DELAY_GAME
+import android.location.Location
+import android.location.LocationManager
 import android.view.animation.Animation.RELATIVE_TO_SELF
 import android.view.animation.RotateAnimation
 import android.widget.ImageView
+import kotlinx.android.synthetic.main.track_control.view.*
 import java.lang.Math.toDegrees
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
@@ -62,7 +68,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private val startButtonColor = Color.parseColor("#9ccc65")
     private val stopButtonColor = Color.parseColor("#e57373")
 
-    // compass start
+    // compass start  https://github.com/andreas-mausch/compass
     lateinit var sensorManager: SensorManager
     lateinit var image: ImageView
     lateinit var accelerometer: Sensor
@@ -337,11 +343,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         } else {
             buttonDirection.text = "North-up"
         }
+
     }
+
 
     fun buttonCompassOnClick(view: View) {
         Log.d(TAG, "buttonCompassOnClick " + compassOn)
-        // todo logic
         if (compassOn) {
             compassOn = false
             imageButton.setImageResource(R.drawable.baseline_explore_off_white_24)
@@ -362,6 +369,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // todo open menu
     }
 
+    // ============================================== UPDATING UI =============================================
+
+    fun updateUI (intent: Intent) {
+        val distanceOverallTotal = intent.getStringExtra(C.DISTANCE_OVERALL_TOTAL)
+        val distanceOverallDuration = intent.getStringExtra(C.DISTANCE_OVERALL_DURATION)
+        val distanceOverallTempo = intent.getStringExtra(C.DISTANCE_OVERALL_TEMPO)
+        if (distanceOverallTotal != null) { textViewOverallTotal.text = distanceOverallTotal }
+        if (distanceOverallDuration != null) { textViewOverallDuration.text = distanceOverallDuration }
+        if (distanceOverallTempo != null) { textViewOverallTempo.text = distanceOverallTempo }
+
+        val distanceWPTotal = intent.getStringExtra(C.DISTANCE_WP_TOTAL)
+        val distanceWPDirect = intent.getStringExtra(C.DISTANCE_WP_DIRECT)
+        val distanceWPTempo = intent.getStringExtra(C.DISTANCE_WP_TEMPO)
+        if (distanceWPTotal != null) { textViewWPTotal.text = distanceWPTotal }
+        if (distanceWPDirect != null) { textViewWPDirect.text = distanceWPDirect }
+        if (distanceWPTempo != null) { textViewWPTempo.text = distanceWPTempo }
+
+        val distanceCPTotal = intent.getStringExtra(C.DISTANCE_CP_TOTAL)
+        val distanceCPDirect = intent.getStringExtra(C.DISTANCE_CP_DIRECT)
+        val distanceCPTempo = intent.getStringExtra(C.DISTANCE_CP_TEMPO)
+        if (distanceCPTotal != null) { textViewCPTotal.text = distanceCPTotal }
+        if (distanceCPDirect != null) { textViewCPDirect.text = distanceCPDirect }
+        if (distanceCPTempo != null) { textViewCPTempo.text = distanceCPTempo }
+
+    }
 
     // ============================================== BROADCAST RECEIVER =============================================
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
@@ -369,18 +401,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             Log.d(TAG, intent!!.action)
             when (intent!!.action){
                 C.LOCATION_UPDATE_ACTION -> {
-                    textViewLatitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString()
-                    textViewLongitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString()
+                    //textViewLatitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString()
+                    //textViewLongitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString()
 
                     if (intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString() != "0.0" &&
                         intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString() != "0.0") {
                         val currentLatLng = LatLng(intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0), intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0))
+                        val location = Location(LocationManager.GPS_PROVIDER).apply {
+                            latitude = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0)
+                            longitude = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0)
+                        }
                         if (mapCentered) {
                             //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
                             mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
                         }
                     }
 
+                    updateUI(intent)
                 }
             }
         }
