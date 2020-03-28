@@ -17,14 +17,12 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.time.ExperimentalTime
-import kotlin.time.hours
+import kotlin.collections.ArrayList
 
 class LocationService : Service() {
     companion object {
         private val TAG = this::class.java.declaringClass!!.simpleName
     }
-
 
     // The desired intervals for location updates. Inexact. Updates may be more or less frequent.
     private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 2000
@@ -51,6 +49,37 @@ class LocationService : Service() {
     private var distanceWPDirect = 0f
     private var distanceWPTotal = 0f
     private var locationWP: Location? = null
+
+    val timer = java.util.Timer()
+    var curSpentTime: Int? = null
+    var curWPSet = false
+    var curWPStartTime: Date? = null
+    var curCPSet = false
+    var curCPStartTime: Date? = null
+
+    val task = object: TimerTask() {
+        var startTime = Date()
+        override fun run() {
+            curSpentTime = ((Date().time - startTime.time) * 0.001).toInt()
+            showNotification()
+        }
+    }
+
+    private fun findTimeStringFromSeconds(seconds: Double?, showHours: Boolean) : String{
+        if (seconds!=null) {
+            var secondsTemp = seconds
+            val hours = (secondsTemp / 3600).toInt()
+            secondsTemp %= 3600
+            val minutes = (secondsTemp / 60).toInt()
+            secondsTemp %= 60
+            val secondsReturn = (secondsTemp).toInt()
+            if (hours != 0 || showHours) {
+                return "$hours:$minutes:$secondsReturn"
+            }
+            return "$minutes:$secondsReturn"
+        }
+        return ""
+    }
 
     override fun onCreate() {
         Log.d(TAG, "onCreate")
@@ -132,7 +161,6 @@ class LocationService : Service() {
         mLocationRequest.setMaxWaitTime(UPDATE_INTERVAL_IN_MILLISECONDS)
     }
 
-
     private fun getLastLocation() {
         try {
             mFusedLocationClient.lastLocation
@@ -149,7 +177,6 @@ class LocationService : Service() {
             Log.e(TAG, "Lost location permission.$unlikely")
         }
     }
-
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
@@ -172,6 +199,10 @@ class LocationService : Service() {
 
         timer.cancel()
         curSpentTime = null
+        curCPStartTime = null
+        curWPStartTime = null
+        curCPSet = false
+        curWPSet = false
     }
 
     override fun onLowMemory() {
@@ -202,25 +233,6 @@ class LocationService : Service() {
         return START_STICKY
         //return super.onStartCommand(intent, flags, startId)
     }
-
-    val timer = java.util.Timer()
-    val task = object: TimerTask() {
-        var timesRan = 0
-        var startTime = SimpleDateFormat("hh:mm:ss").format(Date())
-        var startTimee = Date()
-        override fun run() {
-            println("timer passed ${++timesRan} time(s)")
-            var seconds : Int = ((Date().time - startTimee.time) * 0.001).toInt()
-            val hours = seconds / 3600
-            seconds %= 3600
-            val minutes = seconds / 60
-            seconds %= 60
-            curSpentTime = "$hours:$minutes:$seconds"
-            showNotification()
-        }
-    }
-
-    var curSpentTime: String? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         Log.d(TAG, "onBind")
@@ -255,7 +267,6 @@ class LocationService : Service() {
         // TODO duration, distance, tempo
 
         notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
-        notifyview.setTextViewText(R.id.textViewOverallDuration, curSpentTime)
 
         notifyview.setTextViewText(R.id.textViewWPDirect, "%.2f".format(distanceWPDirect))
         notifyview.setTextViewText(R.id.textViewWPTotal, "%.2f".format(distanceWPTotal))
@@ -267,17 +278,31 @@ class LocationService : Service() {
         val intent = Intent(C.LOCATION_UPDATE_ACTION)
         intent.putExtra(C.DISTANCE_OVERALL_TOTAL, "%.2f".format(distanceOverallTotal))
         if (curSpentTime != null) {
-            intent.putExtra(C.DISTANCE_OVERALL_DURATION, curSpentTime)
+            val duration = findTimeStringFromSeconds(curSpentTime!!.toDouble(), true)
+            notifyview.setTextViewText(R.id.textViewOverallDuration, duration)
+            intent.putExtra(C.DISTANCE_OVERALL_DURATION, duration)
+            val tempo = findTimeStringFromSeconds(calcMinutesPerKm(curSpentTime!!, distanceOverallTotal), false)
+            notifyview.setTextViewText(R.id.textViewOverallTempo, tempo)
+            intent.putExtra(C.DISTANCE_OVERALL_TEMPO, tempo)
         }
-        intent.putExtra(C.DISTANCE_OVERALL_TEMPO, "tempo")
 
         intent.putExtra(C.DISTANCE_WP_TOTAL, "%.2f".format(distanceWPTotal))
         intent.putExtra(C.DISTANCE_WP_DIRECT, "%.2f".format(distanceWPDirect))
-        intent.putExtra(C.DISTANCE_WP_TEMPO, "tempo")
+        if (curWPSet && curWPStartTime != null) {
+            val time : Int = ((Date().time - curWPStartTime!!.time)*0.001).toInt()
+            val wpTempoString = findTimeStringFromSeconds(calcMinutesPerKm(time, distanceWPTotal), false)
+            intent.putExtra(C.DISTANCE_WP_TEMPO, wpTempoString)
+            notifyview.setTextViewText(R.id.textViewWPTempo, wpTempoString)
+        }
 
         intent.putExtra(C.DISTANCE_CP_TOTAL, "%.2f".format(distanceCPTotal))
         intent.putExtra(C.DISTANCE_CP_DIRECT, "%.2f".format(distanceCPDirect))
-        intent.putExtra(C.DISTANCE_CP_TEMPO, "tempo")
+        if (curCPSet && curCPStartTime != null) {
+            val time : Int = ((Date().time - curCPStartTime!!.time)*0.001).toInt()
+            val cpTempoString = findTimeStringFromSeconds(calcMinutesPerKm(time, distanceCPTotal), false)
+            intent.putExtra(C.DISTANCE_CP_TEMPO, cpTempoString)
+            notifyview.setTextViewText(R.id.textViewCPTempo, cpTempoString)
+        }
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         // end updating main
@@ -299,18 +324,34 @@ class LocationService : Service() {
 
     }
 
+    private fun calcMinutesPerKm(seconds: Int, distance: Float) : Double {
+        return (distance / seconds.toFloat()) * 60 * 16.6666667
+    }
+
+    private fun sendWPdata() {
+        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        intent.putExtra(C.CURRENT_WP_LATITUDE, locationWP!!.latitude)
+        intent.putExtra(C.CURRENT_WP_LONGITUDE, locationWP!!.longitude)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
 
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, intent!!.action)
             when(intent!!.action){
                 C.NOTIFICATION_ACTION_WP -> {
+                    curWPSet = true
+                    curWPStartTime = Date()
                     locationWP = currentLocation
                     distanceWPDirect = 0f
                     distanceWPTotal = 0f
+
+                    sendWPdata()
                     showNotification()
                 }
                 C.NOTIFICATION_ACTION_CP -> {
+                    curCPSet = true
+                    curCPStartTime = Date()
                     locationCP = currentLocation
                     distanceCPDirect = 0f
                     distanceCPTotal = 0f

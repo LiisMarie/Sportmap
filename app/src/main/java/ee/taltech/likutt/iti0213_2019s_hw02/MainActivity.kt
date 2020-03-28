@@ -11,17 +11,26 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.hardware.Sensor
+import android.hardware.Sensor.TYPE_ACCELEROMETER
+import android.hardware.Sensor.TYPE_MAGNETIC_FIELD
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.SensorManager.SENSOR_DELAY_GAME
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.animation.Animation.RELATIVE_TO_SELF
+import android.view.animation.RotateAnimation
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -30,23 +39,11 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.track_control.*
-import android.hardware.Sensor.TYPE_ACCELEROMETER
-import android.hardware.Sensor.TYPE_MAGNETIC_FIELD
-import android.hardware.SensorManager.SENSOR_DELAY_GAME
-import android.location.Location
-import android.location.LocationManager
-import android.view.animation.Animation.RELATIVE_TO_SELF
-import android.view.animation.RotateAnimation
-import android.widget.ImageView
-import kotlinx.android.synthetic.main.track_control.view.*
 import java.lang.Math.toDegrees
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.util.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
@@ -69,17 +66,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private val stopButtonColor = Color.parseColor("#e57373")
 
     // compass start  https://github.com/andreas-mausch/compass
-    lateinit var sensorManager: SensorManager
-    lateinit var image: ImageView
-    lateinit var accelerometer: Sensor
-    lateinit var magnetometer: Sensor
+    private lateinit var sensorManager: SensorManager
+    private lateinit var image: ImageView
+    private lateinit var accelerometer: Sensor
+    private lateinit var magnetometer: Sensor
 
-    var currentDegree = 0.0f
-    var lastAccelerometer = FloatArray(3)
-    var lastMagnetometer = FloatArray(3)
-    var lastAccelerometerSet = false
-    var lastMagnetometerSet = false
+    private var currentDegree = 0.0f
+    private var lastAccelerometer = FloatArray(3)
+    private var lastMagnetometer = FloatArray(3)
+    private var lastAccelerometerSet = false
+    private var lastMagnetometerSet = false
     //compass end
+
+    private var curWP : LatLng? = null
+    private var wpMarker : Marker? = null
+
 
     // ============================================== MAIN ENTRY - ONCREATE =============================================
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -298,6 +299,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             buttonStartStop.setBackgroundColor(startButtonColor)
 
         } else {
+            resetUI()
             if (Build.VERSION.SDK_INT >= 26) {
                 // starting the FOREGROUND service
                 // service has to display non-dismissable notification within 5 secs
@@ -369,7 +371,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // todo open menu
     }
 
-    // ============================================== UPDATING UI =============================================
+    // ============================================== UI =============================================
 
     fun updateUI (intent: Intent) {
         val distanceOverallTotal = intent.getStringExtra(C.DISTANCE_OVERALL_TOTAL)
@@ -392,7 +394,47 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         if (distanceCPTotal != null) { textViewCPTotal.text = distanceCPTotal }
         if (distanceCPDirect != null) { textViewCPDirect.text = distanceCPDirect }
         if (distanceCPTempo != null) { textViewCPTempo.text = distanceCPTempo }
+    }
 
+    private fun resetUI () {
+        textViewOverallDuration.text = ""
+        textViewOverallDuration.text = ""
+        textViewOverallTempo.text = ""
+        textViewWPTotal.text = ""
+        textViewWPDirect.text = ""
+        textViewWPTempo.text = ""
+        textViewCPTotal.text = ""
+        textViewCPDirect.text = ""
+        textViewCPTempo.text = ""
+    }
+
+    private fun handleNewWaypoint(wpLatLng: LatLng) {
+        curWP = wpLatLng
+        if (wpMarker != null) {
+            wpMarker!!.remove()
+            wpMarker = null
+        }
+        val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_flag_black_24)
+        val markerIcon: BitmapDescriptor = getMarkerIconFromDrawable(circleDrawable)
+        wpMarker = mMap.addMarker(
+            MarkerOptions()
+                .position(wpLatLng)
+                .title("My Marker")
+                .icon(markerIcon)
+        )
+    }
+
+    private fun getMarkerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
+        val canvas = Canvas()
+        val bitmap: Bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        canvas.setBitmap(bitmap)
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        drawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
     // ============================================== BROADCAST RECEIVER =============================================
@@ -404,13 +446,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     //textViewLatitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString()
                     //textViewLongitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString()
 
-                    if (intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString() != "0.0" &&
-                        intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString() != "0.0") {
+                    if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() &&
+                        !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
                         val currentLatLng = LatLng(intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0), intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0))
-                        val location = Location(LocationManager.GPS_PROVIDER).apply {
-                            latitude = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0)
-                            longitude = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0)
-                        }
                         if (mapCentered) {
                             //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
                             mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
@@ -418,11 +456,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     }
 
                     updateUI(intent)
+
+                    if (!intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN).isNaN() &&
+                        !intent.getDoubleExtra(C.CURRENT_WP_LONGITUDE, Double.NaN).isNaN()) {
+
+                        handleNewWaypoint(LatLng(intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.CURRENT_WP_LONGITUDE, Double.NaN)))
+                    }
                 }
             }
         }
     }
 
+    // ============================================== COMPASS =============================================
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         Log.d(TAG, "onAccuracyChanged")
     }
@@ -464,7 +509,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     }
 
-    fun lowPass(input: FloatArray, output: FloatArray) {
+    private fun lowPass(input: FloatArray, output: FloatArray) {
         val alpha = 0.05f
 
         for (i in input.indices) {
