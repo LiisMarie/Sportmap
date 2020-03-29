@@ -4,12 +4,10 @@ package ee.taltech.likutt.iti0213_2019s_hw02
 //import android.R
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -294,24 +292,44 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // try to start/stop the background service
 
         if (locationServiceActive) {
-            // stopping the service
-            stopService(Intent(this, LocationService::class.java))
-
-            buttonStartStop.text = "START"
-            buttonStartStop.setBackgroundColor(startButtonColor)
+            AlertDialog.Builder(this)
+                .setTitle("Warning")
+                .setMessage("Do you want to stop tracking?")
+                .setIcon(R.drawable.twotone_warning_24)
+                .setPositiveButton("YES", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface?, whichButton: Int) {
+                        stopTracking()
+                    }
+                })
+                .setNegativeButton("NO", null).show()
 
         } else {
-            resetUI()
-            if (Build.VERSION.SDK_INT >= 26) {
-                // starting the FOREGROUND service
-                // service has to display non-dismissable notification within 5 secs
-                startForegroundService(Intent(this, LocationService::class.java))
-            } else {
-                startService(Intent(this, LocationService::class.java))
-            }
-            buttonStartStop.text = "STOP"
-            buttonStartStop.setBackgroundColor(stopButtonColor)
+            startTracking()
         }
+
+    }
+
+    private fun startTracking() {
+        resetUI()
+        if (Build.VERSION.SDK_INT >= 26) {
+            // starting the FOREGROUND service
+            // service has to display non-dismissable notification within 5 secs
+            startForegroundService(Intent(this, LocationService::class.java))
+        } else {
+            startService(Intent(this, LocationService::class.java))
+        }
+        buttonStartStop.text = "STOP"
+        buttonStartStop.setBackgroundColor(stopButtonColor)
+
+        locationServiceActive = !locationServiceActive
+    }
+
+    private fun stopTracking() {
+        // stopping the service
+        stopService(Intent(this, LocationService::class.java))
+
+        buttonStartStop.text = "START"
+        buttonStartStop.setBackgroundColor(startButtonColor)
 
         locationServiceActive = !locationServiceActive
     }
@@ -424,6 +442,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 //.title("WP")
                 .icon(markerIcon)
         )
+        Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
     }
 
     private fun handleNewCheckpoint(cpLatLng: LatLng) {
@@ -436,6 +455,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 //.title("CP")
                 .icon(markerIcon)
         )
+        Toast.makeText(this@MainActivity, "New checkpoint added", Toast.LENGTH_SHORT).show()
     }
 
     private fun getMarkerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
