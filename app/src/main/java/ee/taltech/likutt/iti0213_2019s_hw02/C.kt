@@ -29,5 +29,8 @@ class C {
         val CURRENT_WP_LATITUDE = "ee.taltech.likutt.current_wp.latitude"
         val CURRENT_WP_LONGITUDE = "ee.taltech.likutt.current_wp.longitude"
 
+        val NEW_CP_LATITUDE = "ee.taltech.likutt.new_cp.latitude"
+        val NEW_CP_LONGITUDE = "ee.taltech.likutt.new_cp.longitude"
+
     }
 }

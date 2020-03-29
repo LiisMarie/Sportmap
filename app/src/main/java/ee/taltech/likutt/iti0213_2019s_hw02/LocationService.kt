@@ -335,6 +335,13 @@ class LocationService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
+    private fun sendCPdata() {
+        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        intent.putExtra(C.NEW_CP_LATITUDE, locationCP!!.latitude)
+        intent.putExtra(C.NEW_CP_LONGITUDE, locationCP!!.longitude)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, intent!!.action)
@@ -355,6 +362,8 @@ class LocationService : Service() {
                     locationCP = currentLocation
                     distanceCPDirect = 0f
                     distanceCPTotal = 0f
+
+                    sendCPdata()
                     showNotification()
                 }
             }

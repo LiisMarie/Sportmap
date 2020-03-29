@@ -80,6 +80,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private var curWP : LatLng? = null
     private var wpMarker : Marker? = null
+    private var checkpoints = arrayListOf<LatLng>()
+
 
 
     // ============================================== MAIN ENTRY - ONCREATE =============================================
@@ -419,7 +421,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         wpMarker = mMap.addMarker(
             MarkerOptions()
                 .position(wpLatLng)
-                .title("My Marker")
+                //.title("WP")
+                .icon(markerIcon)
+        )
+    }
+
+    private fun handleNewCheckpoint(cpLatLng: LatLng) {
+        checkpoints.add(cpLatLng)
+        val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_beenhere_black_24)
+        val markerIcon: BitmapDescriptor = getMarkerIconFromDrawable(circleDrawable)
+        mMap.addMarker(
+            MarkerOptions()
+                .position(cpLatLng)
+                //.title("CP")
                 .icon(markerIcon)
         )
     }
@@ -462,6 +476,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                         handleNewWaypoint(LatLng(intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.CURRENT_WP_LONGITUDE, Double.NaN)))
                     }
+
+                    if (!intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN).isNaN() &&
+                        !intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN).isNaN()) {
+
+                        handleNewCheckpoint(LatLng(intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN)))
+                    }
+
+
                 }
             }
         }
