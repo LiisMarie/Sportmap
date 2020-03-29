@@ -14,23 +14,29 @@ class C {
         val NOTIFICATION_ID = 4321
         val REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
-        val DISTANCE_OVERALL_TOTAL = "ee.taltech.likutt.distance_overall_total"
-        val DISTANCE_OVERALL_DURATION = "ee.taltech.likutt.distance_overall_duration"
-        val DISTANCE_OVERALL_TEMPO = "ee.taltech.likutt.distance_overall_tempo"
-
-        val DISTANCE_WP_TOTAL = "ee.taltech.likutt.distance_wp_total"
-        val DISTANCE_WP_DIRECT = "ee.taltech.likutt.distance_wp_direct"
-        val DISTANCE_WP_TEMPO = "distanceWPTempo"
-
-        val DISTANCE_CP_TOTAL = "ee.taltech.likutt.distance_cp_total"
-        val DISTANCE_CP_DIRECT = "ee.taltech.likutt.distance_cp_direct"
-        val DISTANCE_CP_TEMPO = "ee.taltech.likutt.distance_cp_tempo"
+        val STATISTICS_UPDATE_OVERALL_TOTAL = "ee.taltech.likutt.statistics_update.overall_total"
+        val STATISTICS_UPDATE_OVERALL_DURATION = "ee.taltech.likutt.statistics_update.overall_duration"
+        val STATISTICS_UPDATE_OVERALL_TEMPO = "ee.taltech.likutt.statistics_update.overall_tempo"
+        val STATISTICS_UPDATE_WP_TOTAL = "ee.taltech.likutt.statistics_update.wp_total"
+        val STATISTICS_UPDATE_WP_DIRECT = "ee.taltech.likutt.statistics_update.wp_direct"
+        val STATISTICS_UPDATE_WP_TEMPO = "ee.taltech.likutt..statistics.wp_tempo"
+        val STATISTICS_UPDATE_CP_TOTAL = "ee.taltech.likutt.statistics_update.cp_total"
+        val STATISTICS_UPDATE_CP_DIRECT = "ee.taltech.likutt.statistics_update.cp_direct"
+        val STATISTICS_UPDATE_CP_TEMPO = "ee.taltech.likutt.statistics_update.cp_tempo"
 
         val CURRENT_WP_LATITUDE = "ee.taltech.likutt.current_wp.latitude"
         val CURRENT_WP_LONGITUDE = "ee.taltech.likutt.current_wp.longitude"
 
         val NEW_CP_LATITUDE = "ee.taltech.likutt.new_cp.latitude"
         val NEW_CP_LONGITUDE = "ee.taltech.likutt.new_cp.longitude"
+
+        val RESTORE_COMPASS_SET = "ee.taltech.likutt.restore.compass_set"
+        val RESTORE_MAP_CENTERED_SET = "ee.taltech.likutt.restore.map_centered_set"
+        val RESTORE_TRACKING_SET = "ee.taltech.likutt.restore.tracking_set"
+        val RESTORE_MAP_DIRECTION = "ee.taltech.likutt.restore.map_direction"
+        val RESTORE_LOCATION_SERVICE_ACTIVE = "ee.taltech.likutt.restore.location_service_active"
+        val RESTORE_CPS = "ee.taltech.likutt.restore.cps"
+        val RESTORE_WP = "ee.taltech.likutt.restore.wp"
 
     }
 }

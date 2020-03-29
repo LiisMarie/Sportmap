@@ -11,7 +11,6 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.Sensor.TYPE_ACCELEROMETER
@@ -58,10 +57,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private var locationServiceActive = false
 
     private var mapCentered = true
-    private var compassOn = true
+    private var compassSet = true
+    private var trackingSet = false
+    private var mapDirection = "North-up"
 
-    private val startButtonColor = Color.parseColor("#9ccc65")
-    private val stopButtonColor = Color.parseColor("#e57373")
+    private var curWP : LatLng? = null
+    private var wpMarker : Marker? = null
+    private var checkpoints = arrayListOf<LatLng>()
+
+    private var mapUpdated = false
 
     // compass start  https://github.com/andreas-mausch/compass
     private lateinit var sensorManager: SensorManager
@@ -75,12 +79,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private var lastAccelerometerSet = false
     private var lastMagnetometerSet = false
     //compass end
-
-    private var curWP : LatLng? = null
-    private var wpMarker : Marker? = null
-    private var checkpoints = arrayListOf<LatLng>()
-
-
 
     // ============================================== MAIN ENTRY - ONCREATE =============================================
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +104,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         imageButtonCP.setOnClickListener {buttonCPOnClick()}
         imageButtonWP.setOnClickListener {buttonWPOnClick()}
 
-        buttonStartStop.setBackgroundColor(startButtonColor)
+        buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+
+        mapUpdated = true
 
         // compass
         image = findViewById(R.id.imageViewCompass) as ImageView
@@ -118,15 +118,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Add a marker in Sydney and move the camera
-        //val sydney = LatLng(-34.0, 151.0)
-        //mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-
         mMap.uiSettings.isZoomControlsEnabled = true
         mMap.isMyLocationEnabled = true
 
-        val currentLatLng = LatLng(59.4367, 24.7533)
+        val currentLatLng = LatLng(59.4367, 24.7533)  // todo set another starting point
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in on given loc
     }
 
@@ -143,7 +138,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, broadcastReceiverIntentFilter)
 
         // compass
-        if (compassOn) {
+        if (compassSet) {
             sensorManager.registerListener(this, accelerometer, SENSOR_DELAY_GAME)
             sensorManager.registerListener(this, magnetometer, SENSOR_DELAY_GAME)
         }
@@ -154,7 +149,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         super.onPause()
 
         // compass
-        if (compassOn) {
+        if (compassSet) {
             sensorManager.unregisterListener(this, accelerometer)
             sensorManager.unregisterListener(this, magnetometer)
         }
@@ -175,6 +170,146 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     override fun onRestart() {
         Log.d(TAG, "onRestart")
         super.onRestart()
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, broadcastReceiverIntentFilter)
+
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(TAG, "lifecycle onSaveInstanceState")
+
+        outState.putBoolean(C.RESTORE_COMPASS_SET, compassSet)
+        outState.putBoolean(C.RESTORE_MAP_CENTERED_SET, mapCentered)
+        outState.putBoolean(C.RESTORE_TRACKING_SET, trackingSet)
+        outState.putString(C.RESTORE_MAP_DIRECTION, mapDirection)
+        outState.putBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, locationServiceActive)
+
+        /*
+        outState.putStringArrayList(C.RESTORE_CPS, makeStringArrayOfCPs())
+        if (curWP!=null) {
+            outState.putStringArrayList(C.RESTORE_WP, arrayListOf(curWP!!.latitude.toString(), curWP!!.longitude.toString()))
+        }
+        */
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        Log.d(TAG, "lifecycle onRestoreInstanceState")
+
+
+        compassSet = savedInstanceState.getBoolean(C.RESTORE_COMPASS_SET, true)
+        mapCentered = savedInstanceState.getBoolean(C.RESTORE_MAP_CENTERED_SET, true)
+        trackingSet = savedInstanceState.getBoolean(C.RESTORE_TRACKING_SET, false)
+        mapDirection = savedInstanceState.getString(C.RESTORE_MAP_DIRECTION, "North-up")
+        locationServiceActive = savedInstanceState.getBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, false)
+
+        mapUpdated = false
+        /*
+        restoreCPs(savedInstanceState.getStringArrayList(C.RESTORE_CPS))
+        restoreWP(savedInstanceState.getStringArrayList(C.RESTORE_WP))
+        */
+        restoreUI()
+    }
+
+    // ============================================== HELPERS =============================================
+
+    private fun restoreCPs(cpsToRestore: ArrayList<String>?) {
+        if (cpsToRestore != null) {
+            var i = 0
+            while (i < cpsToRestore.size) {
+                var k = i
+                val latlng = LatLng(cpsToRestore[k].toDouble(), cpsToRestore[k+1].toDouble())
+                checkpoints.add(latlng)
+                drawCheckpoint(latlng)
+                i += 2
+            }
+        }
+    }
+
+    private fun restoreWP(wpToRestore: ArrayList<String>?) {
+        if (wpToRestore != null) {
+            curWP = LatLng(wpToRestore[0].toDouble(), wpToRestore[1].toDouble())
+            drawWaypoint(curWP!!)
+        }
+    }
+
+    private fun makeStringArrayOfCPs(): ArrayList<String> {
+        var cpsAsStrings = arrayListOf<String>()
+        for (latlng in checkpoints) {
+            cpsAsStrings.add(latlng.latitude.toString())
+            cpsAsStrings.add(latlng.longitude.toString())
+        }
+        return cpsAsStrings
+    }
+
+    private fun startTracking() {
+        resetUI()
+        if (Build.VERSION.SDK_INT >= 26) {
+            // starting the FOREGROUND service
+            // service has to display non-dismissable notification within 5 secs
+            startForegroundService(Intent(this, LocationService::class.java))
+        } else {
+            startService(Intent(this, LocationService::class.java))
+        }
+        buttonStartStop.text = "STOP"
+        buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStopButton))
+
+        trackingSet = true
+        locationServiceActive = !locationServiceActive
+    }
+
+    private fun stopTracking() {
+        // stopping the service
+        stopService(Intent(this, LocationService::class.java))
+
+        buttonStartStop.text = "START"
+        buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+
+        trackingSet = false
+        locationServiceActive = !locationServiceActive
+    }
+
+    private fun makeCompassVisible() {
+        compassSet = true
+        imageButton.setImageResource(R.drawable.baseline_explore_white_24)
+        sensorManager.registerListener(this, accelerometer, SENSOR_DELAY_GAME)
+        sensorManager.registerListener(this, magnetometer, SENSOR_DELAY_GAME)
+        includeCompass.visibility = View.VISIBLE
+    }
+
+    private fun makeCompassInvisible() {
+        compassSet = false
+        imageButton.setImageResource(R.drawable.baseline_explore_off_white_24)
+        sensorManager.unregisterListener(this, accelerometer)
+        sensorManager.unregisterListener(this, magnetometer)
+        includeCompass.visibility = View.INVISIBLE
+    }
+
+    private fun makeMapCentered() {
+        buttonCentered.text = "Centered"
+        mapCentered = true
+    }
+
+    private fun makeMapNotCentered() {
+        buttonCentered.text = "Not centered"
+        mapCentered = false
+    }
+
+    private fun handleNewWaypoint(wpLatLng: LatLng) {
+        curWP = wpLatLng
+        if (wpMarker != null) {
+            wpMarker!!.remove()
+            wpMarker = null
+        }
+        drawWaypoint(wpLatLng)
+        Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun handleNewCheckpoint(cpLatLng: LatLng) {
+        checkpoints.add(cpLatLng)
+        drawCheckpoint(cpLatLng)
+        Toast.makeText(this@MainActivity, "New checkpoint added", Toast.LENGTH_SHORT).show()
     }
 
     // ============================================== NOTIFICATION CHANNEL CREATION =============================================
@@ -309,31 +444,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     }
 
-    private fun startTracking() {
-        resetUI()
-        if (Build.VERSION.SDK_INT >= 26) {
-            // starting the FOREGROUND service
-            // service has to display non-dismissable notification within 5 secs
-            startForegroundService(Intent(this, LocationService::class.java))
-        } else {
-            startService(Intent(this, LocationService::class.java))
-        }
-        buttonStartStop.text = "STOP"
-        buttonStartStop.setBackgroundColor(stopButtonColor)
-
-        locationServiceActive = !locationServiceActive
-    }
-
-    private fun stopTracking() {
-        // stopping the service
-        stopService(Intent(this, LocationService::class.java))
-
-        buttonStartStop.text = "START"
-        buttonStartStop.setBackgroundColor(startButtonColor)
-
-        locationServiceActive = !locationServiceActive
-    }
-
     fun buttonWPOnClick() {
         Log.d(TAG, "buttonWPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_WP))
@@ -347,11 +457,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     fun buttonCenteredOnClick(view: View) {
         Log.d(TAG, "buttonCenteredOnClick " + buttonCentered.text)
         if (!mapCentered) {
-            buttonCentered.text = "Centered"
-            mapCentered = true
+            makeMapCentered()
         } else {
-            buttonCentered.text = "Not centered"
-            mapCentered = false
+            makeMapNotCentered()
         }
     }
 
@@ -360,29 +468,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // todo logic
         if (buttonDirection.text == "North-up") {
             buttonDirection.text = "Direction up"
+            mapDirection = "Direction up"
         } else if (buttonDirection.text == "Direction up") {
             buttonDirection.text = "User chosen-up"
+            mapDirection = "User chosen-up"
         } else {
             buttonDirection.text = "North-up"
+            mapDirection = "North-up"
         }
 
     }
 
-
     fun buttonCompassOnClick(view: View) {
-        Log.d(TAG, "buttonCompassOnClick " + compassOn)
-        if (compassOn) {
-            compassOn = false
-            imageButton.setImageResource(R.drawable.baseline_explore_off_white_24)
-            sensorManager.unregisterListener(this, accelerometer)
-            sensorManager.unregisterListener(this, magnetometer)
-            includeCompass.visibility = View.INVISIBLE
+        Log.d(TAG, "buttonCompassOnClick " + compassSet)
+        if (compassSet) {
+            makeCompassInvisible()
         } else {
-            compassOn = true
-            imageButton.setImageResource(R.drawable.baseline_explore_white_24)
-            sensorManager.registerListener(this, accelerometer, SENSOR_DELAY_GAME)
-            sensorManager.registerListener(this, magnetometer, SENSOR_DELAY_GAME)
-            includeCompass.visibility = View.VISIBLE
+            makeCompassVisible()
         }
     }
 
@@ -393,27 +495,65 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     // ============================================== UI =============================================
 
+    private fun restoreUI() {
+        if (compassSet) { makeCompassVisible() }
+        else { makeCompassInvisible() }
+
+        if (mapCentered) { makeMapCentered() }
+        else { makeMapNotCentered() }
+
+        if (trackingSet) {
+            buttonStartStop.text = "STOP"
+            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStopButton))
+        } else {
+            buttonStartStop.text = "START"
+            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+        }
+
+        // todo logic behind this
+        if (mapDirection == "North-up") {
+            buttonDirection.text = "North-up"
+        } else if (mapDirection == "Direction up") {
+            buttonDirection.text = "Direction up"
+        } else if (mapDirection == "User chosen-up") {
+            buttonDirection.text = "User chosen-up"
+        }
+    }
+
     fun updateUI (intent: Intent) {
-        val distanceOverallTotal = intent.getStringExtra(C.DISTANCE_OVERALL_TOTAL)
-        val distanceOverallDuration = intent.getStringExtra(C.DISTANCE_OVERALL_DURATION)
-        val distanceOverallTempo = intent.getStringExtra(C.DISTANCE_OVERALL_TEMPO)
+        val distanceOverallTotal = intent.getStringExtra(C.STATISTICS_UPDATE_OVERALL_TOTAL)
+        val distanceOverallDuration = intent.getStringExtra(C.STATISTICS_UPDATE_OVERALL_DURATION)
+        val distanceOverallTempo = intent.getStringExtra(C.STATISTICS_UPDATE_OVERALL_TEMPO)
         if (distanceOverallTotal != null) { textViewOverallTotal.text = distanceOverallTotal }
         if (distanceOverallDuration != null) { textViewOverallDuration.text = distanceOverallDuration }
         if (distanceOverallTempo != null) { textViewOverallTempo.text = distanceOverallTempo }
 
-        val distanceWPTotal = intent.getStringExtra(C.DISTANCE_WP_TOTAL)
-        val distanceWPDirect = intent.getStringExtra(C.DISTANCE_WP_DIRECT)
-        val distanceWPTempo = intent.getStringExtra(C.DISTANCE_WP_TEMPO)
+        val distanceWPTotal = intent.getStringExtra(C.STATISTICS_UPDATE_WP_TOTAL)
+        val distanceWPDirect = intent.getStringExtra(C.STATISTICS_UPDATE_WP_DIRECT)
+        val distanceWPTempo = intent.getStringExtra(C.STATISTICS_UPDATE_WP_TEMPO)
         if (distanceWPTotal != null) { textViewWPTotal.text = distanceWPTotal }
         if (distanceWPDirect != null) { textViewWPDirect.text = distanceWPDirect }
         if (distanceWPTempo != null) { textViewWPTempo.text = distanceWPTempo }
 
-        val distanceCPTotal = intent.getStringExtra(C.DISTANCE_CP_TOTAL)
-        val distanceCPDirect = intent.getStringExtra(C.DISTANCE_CP_DIRECT)
-        val distanceCPTempo = intent.getStringExtra(C.DISTANCE_CP_TEMPO)
+        val distanceCPTotal = intent.getStringExtra(C.STATISTICS_UPDATE_CP_TOTAL)
+        val distanceCPDirect = intent.getStringExtra(C.STATISTICS_UPDATE_CP_DIRECT)
+        val distanceCPTempo = intent.getStringExtra(C.STATISTICS_UPDATE_CP_TEMPO)
         if (distanceCPTotal != null) { textViewCPTotal.text = distanceCPTotal }
         if (distanceCPDirect != null) { textViewCPDirect.text = distanceCPDirect }
         if (distanceCPTempo != null) { textViewCPTempo.text = distanceCPTempo }
+
+
+
+        if (!mapUpdated) {
+            mapUpdated = true
+            val restored = intent.getDoubleArrayExtra(C.RESTORE_WP)
+            Log.d(TAG, "WAYPOINT " + restored)
+            if (restored != null) {
+                curWP = LatLng(restored[0], restored[1])
+                drawWaypoint(curWP!!)
+            }
+
+        }
     }
 
     private fun resetUI () {
@@ -426,14 +566,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         textViewCPTotal.text = ""
         textViewCPDirect.text = ""
         textViewCPTempo.text = ""
+        curWP = null
+        wpMarker = null
+        checkpoints = arrayListOf()
+        mMap.clear()
     }
 
-    private fun handleNewWaypoint(wpLatLng: LatLng) {
-        curWP = wpLatLng
-        if (wpMarker != null) {
-            wpMarker!!.remove()
-            wpMarker = null
-        }
+    private fun drawWaypoint(wpLatLng: LatLng) {
         val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_flag_black_24)
         val markerIcon: BitmapDescriptor = getMarkerIconFromDrawable(circleDrawable)
         wpMarker = mMap.addMarker(
@@ -442,11 +581,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 //.title("WP")
                 .icon(markerIcon)
         )
-        Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
     }
 
-    private fun handleNewCheckpoint(cpLatLng: LatLng) {
-        checkpoints.add(cpLatLng)
+    private fun drawCheckpoint(cpLatLng: LatLng) {
         val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_beenhere_black_24)
         val markerIcon: BitmapDescriptor = getMarkerIconFromDrawable(circleDrawable)
         mMap.addMarker(
@@ -455,7 +592,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 //.title("CP")
                 .icon(markerIcon)
         )
-        Toast.makeText(this@MainActivity, "New checkpoint added", Toast.LENGTH_SHORT).show()
     }
 
     private fun getMarkerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
@@ -474,11 +610,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     // ============================================== BROADCAST RECEIVER =============================================
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d(TAG, intent!!.action)
-            when (intent!!.action){
-                C.LOCATION_UPDATE_ACTION -> {
-                    //textViewLatitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0).toString()
-                    //textViewLongitude.text = intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0).toString()
+            if (intent != null) {
+                Log.d(TAG, intent!!.action)
+
+                if (C.LOCATION_UPDATE_ACTION == intent!!.action){
 
                     if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() &&
                         !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
@@ -506,7 +641,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                 }
             }
+
         }
+
     }
 
     // ============================================== COMPASS =============================================
@@ -516,7 +653,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     override fun onSensorChanged(event: SensorEvent?) {
         Log.d(TAG, "onSensorChanged")
-        if (compassOn) {
+        if (compassSet) {
             if (event != null) {
                 if (event.sensor === accelerometer) {
                     lowPass(event.values, lastAccelerometer)

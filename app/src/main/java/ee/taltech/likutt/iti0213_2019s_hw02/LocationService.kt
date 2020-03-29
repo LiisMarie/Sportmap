@@ -15,9 +15,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
-import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class LocationService : Service() {
     companion object {
@@ -50,7 +48,7 @@ class LocationService : Service() {
     private var distanceWPTotal = 0f
     private var locationWP: Location? = null
 
-    val timer = java.util.Timer()
+    val timer = Timer()
     var curSpentTime: Int? = null
     var curWPSet = false
     var curWPStartTime: Date? = null
@@ -63,22 +61,6 @@ class LocationService : Service() {
             curSpentTime = ((Date().time - startTime.time) * 0.001).toInt()
             showNotification()
         }
-    }
-
-    private fun findTimeStringFromSeconds(seconds: Double?, showHours: Boolean) : String{
-        if (seconds!=null) {
-            var secondsTemp = seconds
-            val hours = (secondsTemp / 3600).toInt()
-            secondsTemp %= 3600
-            val minutes = (secondsTemp / 60).toInt()
-            secondsTemp %= 60
-            val secondsReturn = (secondsTemp).toInt()
-            if (hours != 0 || showHours) {
-                return "$hours:$minutes:$secondsReturn"
-            }
-            return "$minutes:$secondsReturn"
-        }
-        return ""
     }
 
     override fun onCreate() {
@@ -198,6 +180,7 @@ class LocationService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
         timer.cancel()
+        timer.purge()
         curSpentTime = null
         curCPStartTime = null
         curWPStartTime = null
@@ -264,48 +247,57 @@ class LocationService : Service() {
         notifyview.setOnClickPendingIntent(R.id.imageButtonCP, pendingIntentCp)
         notifyview.setOnClickPendingIntent(R.id.imageButtonWP, pendingIntentWp)
 
-        // TODO duration, distance, tempo
-
         notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
 
-        notifyview.setTextViewText(R.id.textViewWPDirect, "%.2f".format(distanceWPDirect))
-        notifyview.setTextViewText(R.id.textViewWPTotal, "%.2f".format(distanceWPTotal))
-
-        notifyview.setTextViewText(R.id.textViewCPDirect, "%.2f".format(distanceCPDirect))
-        notifyview.setTextViewText(R.id.textViewCPTotal, "%.2f".format(distanceCPTotal))
-
-        // start updating main
         val intent = Intent(C.LOCATION_UPDATE_ACTION)
-        intent.putExtra(C.DISTANCE_OVERALL_TOTAL, "%.2f".format(distanceOverallTotal))
+
+        intent.putExtra(C.STATISTICS_UPDATE_OVERALL_TOTAL, "%.2f".format(distanceOverallTotal))
         if (curSpentTime != null) {
             val duration = findTimeStringFromSeconds(curSpentTime!!.toDouble(), true)
-            notifyview.setTextViewText(R.id.textViewOverallDuration, duration)
-            intent.putExtra(C.DISTANCE_OVERALL_DURATION, duration)
             val tempo = findTimeStringFromSeconds(calcMinutesPerKm(curSpentTime!!, distanceOverallTotal), false)
+
+            notifyview.setTextViewText(R.id.textViewOverallDuration, duration)
             notifyview.setTextViewText(R.id.textViewOverallTempo, tempo)
-            intent.putExtra(C.DISTANCE_OVERALL_TEMPO, tempo)
+
+            intent.putExtra(C.STATISTICS_UPDATE_OVERALL_DURATION, duration)
+            intent.putExtra(C.STATISTICS_UPDATE_OVERALL_TEMPO, tempo)
         }
 
-        intent.putExtra(C.DISTANCE_WP_TOTAL, "%.2f".format(distanceWPTotal))
-        intent.putExtra(C.DISTANCE_WP_DIRECT, "%.2f".format(distanceWPDirect))
         if (curWPSet && curWPStartTime != null) {
             val time : Int = ((Date().time - curWPStartTime!!.time)*0.001).toInt()
             val wpTempoString = findTimeStringFromSeconds(calcMinutesPerKm(time, distanceWPTotal), false)
-            intent.putExtra(C.DISTANCE_WP_TEMPO, wpTempoString)
+
+            notifyview.setTextViewText(R.id.textViewWPDirect, "%.2f".format(distanceWPDirect))
+            notifyview.setTextViewText(R.id.textViewWPTotal, "%.2f".format(distanceWPTotal))
             notifyview.setTextViewText(R.id.textViewWPTempo, wpTempoString)
+
+            intent.putExtra(C.STATISTICS_UPDATE_WP_DIRECT, "%.2f".format(distanceWPDirect))
+            intent.putExtra(C.STATISTICS_UPDATE_WP_TOTAL, "%.2f".format(distanceWPTotal))
+            intent.putExtra(C.STATISTICS_UPDATE_WP_TEMPO, wpTempoString)
         }
 
-        intent.putExtra(C.DISTANCE_CP_TOTAL, "%.2f".format(distanceCPTotal))
-        intent.putExtra(C.DISTANCE_CP_DIRECT, "%.2f".format(distanceCPDirect))
         if (curCPSet && curCPStartTime != null) {
             val time : Int = ((Date().time - curCPStartTime!!.time)*0.001).toInt()
             val cpTempoString = findTimeStringFromSeconds(calcMinutesPerKm(time, distanceCPTotal), false)
-            intent.putExtra(C.DISTANCE_CP_TEMPO, cpTempoString)
+
+            notifyview.setTextViewText(R.id.textViewCPTotal, "%.2f".format(distanceCPTotal))
+            notifyview.setTextViewText(R.id.textViewCPDirect, "%.2f".format(distanceCPDirect))
             notifyview.setTextViewText(R.id.textViewCPTempo, cpTempoString)
+
+            intent.putExtra(C.STATISTICS_UPDATE_CP_TOTAL, "%.2f".format(distanceCPTotal))
+            intent.putExtra(C.STATISTICS_UPDATE_CP_DIRECT, "%.2f".format(distanceCPDirect))
+            intent.putExtra(C.STATISTICS_UPDATE_CP_TEMPO, cpTempoString)
+
         }
 
+        /*
+        intent.putExtra(C.RESTORE_CPS, checkpoints)*/
+        if (locationWP != null) {
+            intent.putExtra(C.RESTORE_WP, arrayOf(locationWP!!.latitude, locationWP!!.longitude))
+        }
+
+
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-        // end updating main
 
         // construct and show notification
         var builder = NotificationCompat.Builder(applicationContext,
@@ -342,6 +334,8 @@ class LocationService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
+    private var checkpoints = arrayListOf<Location>()
+
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, intent!!.action)
@@ -363,12 +357,29 @@ class LocationService : Service() {
                     distanceCPDirect = 0f
                     distanceCPTotal = 0f
 
+                    checkpoints.add(locationCP!!)
                     sendCPdata()
                     showNotification()
                 }
             }
         }
 
+    }
+
+    private fun findTimeStringFromSeconds(seconds: Double?, showHours: Boolean) : String{
+        if (seconds!=null) {
+            var secondsTemp = seconds
+            val hours = (secondsTemp / 3600).toInt()
+            secondsTemp %= 3600
+            val minutes = (secondsTemp / 60).toInt()
+            secondsTemp %= 60
+            val secondsReturn = (secondsTemp).toInt()
+            if (hours != 0 || showHours) {
+                return "$hours:$minutes:$secondsReturn"
+            }
+            return "$minutes:$secondsReturn"
+        }
+        return ""
     }
 
 }

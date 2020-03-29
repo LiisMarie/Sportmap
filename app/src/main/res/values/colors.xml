@@ -9,9 +9,7 @@
 
     <color name="colorWCPButton">#80cbc4</color>
 
-    <color name="colorStartButton">#ccff90</color>
+    <color name="colorStartButton">#9ccc65</color>
     <color name="colorStopButton">#e57373</color>
-
-
 
 </resources>
