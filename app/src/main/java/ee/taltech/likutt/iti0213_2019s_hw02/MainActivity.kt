@@ -113,6 +113,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
+
+        mapUpdated = true
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -185,12 +187,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         outState.putString(C.RESTORE_MAP_DIRECTION, mapDirection)
         outState.putBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, locationServiceActive)
 
-        /*
-        outState.putStringArrayList(C.RESTORE_CPS, makeStringArrayOfCPs())
-        if (curWP!=null) {
-            outState.putStringArrayList(C.RESTORE_WP, arrayListOf(curWP!!.latitude.toString(), curWP!!.longitude.toString()))
-        }
-        */
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -225,22 +221,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 i += 2
             }
         }
-    }
-
-    private fun restoreWP(wpToRestore: ArrayList<String>?) {
-        if (wpToRestore != null) {
-            curWP = LatLng(wpToRestore[0].toDouble(), wpToRestore[1].toDouble())
-            drawWaypoint(curWP!!)
-        }
-    }
-
-    private fun makeStringArrayOfCPs(): ArrayList<String> {
-        var cpsAsStrings = arrayListOf<String>()
-        for (latlng in checkpoints) {
-            cpsAsStrings.add(latlng.latitude.toString())
-            cpsAsStrings.add(latlng.longitude.toString())
-        }
-        return cpsAsStrings
     }
 
     private fun startTracking() {
@@ -303,13 +283,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             wpMarker = null
         }
         drawWaypoint(wpLatLng)
-        Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
     }
 
     private fun handleNewCheckpoint(cpLatLng: LatLng) {
         checkpoints.add(cpLatLng)
         drawCheckpoint(cpLatLng)
-        Toast.makeText(this@MainActivity, "New checkpoint added", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this@MainActivity, "New checkpoint added", Toast.LENGTH_SHORT).show()
     }
 
     // ============================================== NOTIFICATION CHANNEL CREATION =============================================
@@ -546,13 +526,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         if (!mapUpdated) {
             mapUpdated = true
-            val restored = intent.getDoubleArrayExtra(C.RESTORE_WP)
-            Log.d(TAG, "WAYPOINT " + restored)
-            if (restored != null) {
-                curWP = LatLng(restored[0], restored[1])
-                drawWaypoint(curWP!!)
-            }
-
         }
     }
 

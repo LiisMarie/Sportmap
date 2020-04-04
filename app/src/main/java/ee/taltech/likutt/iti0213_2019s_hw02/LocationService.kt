@@ -111,17 +111,22 @@ class LocationService : Service() {
         Log.i(TAG, "New location: $location")
         if (currentLocation == null){
             locationStart = location
-            locationCP = location
-            locationWP = location
+            //locationCP = location
+            //locationWP = location
         } else {
             distanceOverallDirect = location.distanceTo(locationStart)
             distanceOverallTotal += location.distanceTo(currentLocation)
 
-            distanceCPDirect = location.distanceTo(locationCP)
-            distanceCPTotal += location.distanceTo(currentLocation)
+            if (locationCP != null) {
+                distanceCPDirect = location.distanceTo(locationCP)
+                distanceCPTotal += location.distanceTo(currentLocation)
+            }
 
-            distanceWPDirect = location.distanceTo(locationWP)
-            distanceWPTotal += location.distanceTo(currentLocation)
+            if (locationWP != null) {
+                distanceWPDirect = location.distanceTo(locationWP)
+                distanceWPTotal += location.distanceTo(currentLocation)
+            }
+
         }
         // save the location for calculations
         currentLocation = location
@@ -291,9 +296,12 @@ class LocationService : Service() {
         }
 
         /*
-        intent.putExtra(C.RESTORE_CPS, checkpoints)*/
+        intent.putExtra(C.RESTORE_CPS, checkpoints)
+        */
         if (locationWP != null) {
-            intent.putExtra(C.RESTORE_WP, arrayOf(locationWP!!.latitude, locationWP!!.longitude))
+            //intent.putExtra(C.RESTORE_WP_LATITUDE, locationWP!!.latitude)
+            //intent.putExtra(C.RESTORE_WP_LONGITUDE, locationWP!!.longitude)
+            sendWPdata()
         }
 
 
