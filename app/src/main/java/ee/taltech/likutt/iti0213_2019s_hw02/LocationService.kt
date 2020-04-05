@@ -16,6 +16,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 class LocationService : Service() {
     companion object {
@@ -54,6 +55,9 @@ class LocationService : Service() {
     var curWPStartTime: Date? = null
     var curCPSet = false
     var curCPStartTime: Date? = null
+
+    private var checkpoints: ArrayList<Location> = arrayListOf<Location>()
+
 
     val task = object: TimerTask() {
         var startTime = Date()
@@ -175,10 +179,8 @@ class LocationService : Service() {
         // remove notifications
         NotificationManagerCompat.from(this).cancelAll()
 
-
         // don't forget to unregister brodcast receiver!!!!
         unregisterReceiver(broadcastReceiver)
-
 
         // broadcast stop to UI
         val intent = Intent(C.LOCATION_UPDATE_ACTION)
@@ -191,6 +193,7 @@ class LocationService : Service() {
         curWPStartTime = null
         curCPSet = false
         curWPSet = false
+        checkpoints = arrayListOf<Location>()
     }
 
     override fun onLowMemory() {
@@ -213,6 +216,8 @@ class LocationService : Service() {
         distanceCPTotal = 0f
         distanceWPDirect = 0f
         distanceWPTotal = 0f
+
+        checkpoints = arrayListOf<Location>()
 
         timer.schedule(task, 0, 1000)
 
@@ -295,13 +300,19 @@ class LocationService : Service() {
 
         }
 
-        /*
-        intent.putExtra(C.RESTORE_CPS, checkpoints)
-        */
         if (locationWP != null) {
-            //intent.putExtra(C.RESTORE_WP_LATITUDE, locationWP!!.latitude)
-            //intent.putExtra(C.RESTORE_WP_LONGITUDE, locationWP!!.longitude)
-            sendWPdata()
+            intent.putExtra(C.CURRENT_WP_LATITUDE, locationWP!!.latitude)
+            intent.putExtra(C.CURRENT_WP_LONGITUDE, locationWP!!.longitude)
+        }
+        if (checkpoints.size != 0) {
+            var i = 0
+
+            for (cp in checkpoints) {
+                intent.putExtra(C.RESTORE_CPS_LATITUDE + i.toString(), cp.latitude)
+                intent.putExtra(C.RESTORE_CPS_LONGITUDE + i.toString(), cp.longitude)
+                i++
+            }
+
         }
 
 
@@ -341,8 +352,6 @@ class LocationService : Service() {
         intent.putExtra(C.NEW_CP_LONGITUDE, locationCP!!.longitude)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
-
-    private var checkpoints = arrayListOf<Location>()
 
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {

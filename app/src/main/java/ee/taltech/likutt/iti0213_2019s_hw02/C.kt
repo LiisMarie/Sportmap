@@ -35,12 +35,8 @@ class C {
         val RESTORE_TRACKING_SET = "ee.taltech.likutt.restore.tracking_set"
         val RESTORE_MAP_DIRECTION = "ee.taltech.likutt.restore.map_direction"
         val RESTORE_LOCATION_SERVICE_ACTIVE = "ee.taltech.likutt.restore.location_service_active"
-        val RESTORE_CPS = "ee.taltech.likutt.restore.cps"
-        val RESTORE_WP = "ee.taltech.likutt.restore.wp"
-        val RESTORE_WP_LATITUDE = "ee.taltech.likutt.restore.wp_latitude"
-        val RESTORE_WP_LONGITUDE = "ee.taltech.likutt.restore.wp_longitude"
-
-
+        val RESTORE_CPS_LATITUDE = "ee.taltech.likutt.restore.cps_latitude"
+        val RESTORE_CPS_LONGITUDE = "ee.taltech.likutt.restore.cps_longitude"
 
     }
 }

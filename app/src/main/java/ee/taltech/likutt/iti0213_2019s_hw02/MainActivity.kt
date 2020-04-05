@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         accelerometer = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
 
-        mapUpdated = true
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -144,6 +143,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             sensorManager.registerListener(this, accelerometer, SENSOR_DELAY_GAME)
             sensorManager.registerListener(this, magnetometer, SENSOR_DELAY_GAME)
         }
+
+        mapUpdated = false
     }
 
     override fun onPause() {
@@ -162,11 +163,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         super.onStop()
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+        mapUpdated = false
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         super.onDestroy()
+
+        mapUpdated = false
     }
 
     override fun onRestart() {
@@ -174,7 +178,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         super.onRestart()
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, broadcastReceiverIntentFilter)
-
+        mapUpdated = false
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -201,27 +205,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         locationServiceActive = savedInstanceState.getBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, false)
 
         mapUpdated = false
-        /*
-        restoreCPs(savedInstanceState.getStringArrayList(C.RESTORE_CPS))
-        restoreWP(savedInstanceState.getStringArrayList(C.RESTORE_WP))
-        */
+
         restoreUI()
     }
 
     // ============================================== HELPERS =============================================
-
-    private fun restoreCPs(cpsToRestore: ArrayList<String>?) {
-        if (cpsToRestore != null) {
-            var i = 0
-            while (i < cpsToRestore.size) {
-                var k = i
-                val latlng = LatLng(cpsToRestore[k].toDouble(), cpsToRestore[k+1].toDouble())
-                checkpoints.add(latlng)
-                drawCheckpoint(latlng)
-                i += 2
-            }
-        }
-    }
 
     private fun startTracking() {
         resetUI()
@@ -522,11 +510,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         if (distanceCPDirect != null) { textViewCPDirect.text = distanceCPDirect }
         if (distanceCPTempo != null) { textViewCPTempo.text = distanceCPTempo }
 
-
-
-        if (!mapUpdated) {
-            mapUpdated = true
-        }
     }
 
     private fun resetUI () {
@@ -611,6 +594,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                         handleNewCheckpoint(LatLng(intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN)))
                     }
 
+                    if (!mapUpdated) {
+                        mapUpdated = true
+                        var i = 0
+                        while (true) {
+                            val lat = intent.getDoubleExtra(C.RESTORE_CPS_LATITUDE + i.toString(), Double.NaN)
+                            val lng = intent.getDoubleExtra(C.RESTORE_CPS_LONGITUDE + i.toString(), Double.NaN)
+                            Log.d(TAG, "MAP UPDATED lat " + lat)
+                            Log.d(TAG, "MAP UPDATED lng " + lng)
+
+                            if (!lat.isNaN() && !lng.isNaN()) {
+                                handleNewCheckpoint(LatLng(lat, lng))
+                            } else {
+                                break
+                            }
+                            i++
+                        }
+
+                    }
 
                 }
             }
