@@ -259,7 +259,7 @@ class LocationService : Service() {
 
         notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
 
-        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        val intent = Intent(C.STATISTICS_UPDATE_ACTION)
 
         intent.putExtra(C.STATISTICS_UPDATE_OVERALL_TOTAL, "%.2f".format(distanceOverallTotal))
         if (curSpentTime != null) {
@@ -340,14 +340,14 @@ class LocationService : Service() {
     }
 
     private fun sendWPdata() {
-        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        val intent = Intent(C.STATISTICS_UPDATE_ACTION)
         intent.putExtra(C.CURRENT_WP_LATITUDE, locationWP!!.latitude)
         intent.putExtra(C.CURRENT_WP_LONGITUDE, locationWP!!.longitude)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     private fun sendCPdata() {
-        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        val intent = Intent(C.STATISTICS_UPDATE_ACTION)
         intent.putExtra(C.NEW_CP_LATITUDE, locationCP!!.latitude)
         intent.putExtra(C.NEW_CP_LONGITUDE, locationCP!!.longitude)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)

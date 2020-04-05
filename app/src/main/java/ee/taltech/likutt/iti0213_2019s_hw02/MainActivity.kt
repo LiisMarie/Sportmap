@@ -95,6 +95,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
 
         broadcastReceiverIntentFilter.addAction(C.LOCATION_UPDATE_ACTION)
+        broadcastReceiverIntentFilter.addAction(C.STATISTICS_UPDATE_ACTION)
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -200,7 +202,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         compassSet = savedInstanceState.getBoolean(C.RESTORE_COMPASS_SET, true)
         mapCentered = savedInstanceState.getBoolean(C.RESTORE_MAP_CENTERED_SET, true)
-        trackingSet = savedInstanceState.getBoolean(C.RESTORE_TRACKING_SET, false)
+        //trackingSet = savedInstanceState.getBoolean(C.RESTORE_TRACKING_SET, false)
         mapDirection = savedInstanceState.getString(C.RESTORE_MAP_DIRECTION, "North-up")
         locationServiceActive = savedInstanceState.getBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, false)
 
@@ -461,6 +463,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // todo open menu
     }
 
+    fun dealWithTracking() {
+        if (trackingSet) {
+            buttonStartStop.text = "STOP"
+            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStopButton))
+
+            locationServiceActive = true
+        } else {
+            buttonStartStop.text = "START"
+            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+
+            locationServiceActive = false
+        }
+    }
+
     // ============================================== UI =============================================
 
     private fun restoreUI() {
@@ -469,14 +485,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         if (mapCentered) { makeMapCentered() }
         else { makeMapNotCentered() }
-
-        if (trackingSet) {
-            buttonStartStop.text = "STOP"
-            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStopButton))
-        } else {
-            buttonStartStop.text = "START"
-            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
-        }
 
         // todo logic behind this
         if (mapDirection == "North-up") {
@@ -570,6 +578,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 Log.d(TAG, intent!!.action)
 
                 if (C.LOCATION_UPDATE_ACTION == intent!!.action){
+                    trackingSet = true
 
                     if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() &&
                         !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
@@ -580,6 +589,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                         }
                     }
 
+                }
+
+                if (C.STATISTICS_UPDATE_ACTION == intent!!.action){
                     updateUI(intent)
 
                     if (!intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN).isNaN() &&
@@ -610,9 +622,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                             }
                             i++
                         }
+                        trackingSet = true
+                        dealWithTracking()
 
                     }
-
                 }
             }
 

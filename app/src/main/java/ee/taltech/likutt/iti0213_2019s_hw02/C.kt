@@ -14,6 +14,8 @@ class C {
         val NOTIFICATION_ID = 4321
         val REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
+        val STATISTICS_UPDATE_ACTION = "ee.taltech.likutt.statistics_update"
+
         val STATISTICS_UPDATE_OVERALL_TOTAL = "ee.taltech.likutt.statistics_update.overall_total"
         val STATISTICS_UPDATE_OVERALL_DURATION = "ee.taltech.likutt.statistics_update.overall_duration"
         val STATISTICS_UPDATE_OVERALL_TEMPO = "ee.taltech.likutt.statistics_update.overall_tempo"
