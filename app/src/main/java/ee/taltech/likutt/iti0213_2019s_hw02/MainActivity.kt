@@ -291,9 +291,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 "Default channel",
                 NotificationManager.IMPORTANCE_LOW
             );
-
             //.setShowBadge(false).setSound(null, null);
-
             channel.description = "Default channel"
 
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
