@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">iti0213-2019s-hw02</string>
+    <string name="app_name">SportMap</string>
     <string name="title_activity_maps">Map</string>
     <string name="compass">Compass</string>
     <string name="initial_track_control_text"></string>

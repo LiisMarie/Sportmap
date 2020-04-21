@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:background="@android:color/white"
-    android:backgroundTint="@android:color/white"
+    android:background="#1A000000"
     android:maxHeight="64dp"
     android:orientation="horizontal">
 
@@ -21,6 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
         <TextView
@@ -28,6 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
         <TextView
@@ -35,6 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -63,6 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
         <TextView
@@ -70,6 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
         <TextView
@@ -77,6 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -103,6 +108,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
         <TextView
@@ -110,6 +116,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
         <TextView
@@ -117,6 +124,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initial_track_control_text"
+            android:textColor="#000000"
             android:textSize="13sp" />
 
     </LinearLayout>

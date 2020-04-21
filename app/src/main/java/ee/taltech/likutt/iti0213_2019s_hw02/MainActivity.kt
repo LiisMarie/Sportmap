@@ -202,7 +202,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         compassSet = savedInstanceState.getBoolean(C.RESTORE_COMPASS_SET, true)
         mapCentered = savedInstanceState.getBoolean(C.RESTORE_MAP_CENTERED_SET, true)
-        //trackingSet = savedInstanceState.getBoolean(C.RESTORE_TRACKING_SET, false)
         mapDirection = savedInstanceState.getString(C.RESTORE_MAP_DIRECTION, "North-up")
         locationServiceActive = savedInstanceState.getBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, false)
 
@@ -459,6 +458,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     fun buttonMenuOnClick(view: View) {
         Log.d(TAG, "buttonMenuOnClick")
         // todo open menu
+        val intent = Intent(this, MenuActivity::class.java)
+        startActivity(intent)
     }
 
     fun dealWithTracking() {

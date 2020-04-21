@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.location.Location
+import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
@@ -14,7 +15,12 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
 import com.google.android.gms.location.*
+import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -50,19 +56,22 @@ class LocationService : Service() {
     private var locationWP: Location? = null
 
     val timer = Timer()
-    var curSpentTime: Int? = null
-    var curWPSet = false
+    var curSpentTime: Long = 0L
     var curWPStartTime: Date? = null
-    var curCPSet = false
     var curCPStartTime: Date? = null
 
     private var checkpoints: ArrayList<Location> = arrayListOf<Location>()
+
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+
+    private var mJwt: String? = null
+    private var trackingSessionId: String? = null
 
 
     val task = object: TimerTask() {
         var startTime = Date()
         override fun run() {
-            curSpentTime = ((Date().time - startTime.time) * 0.001).toInt()
+            curSpentTime = Date().time - startTime.time
             showNotification()
         }
     }
@@ -75,9 +84,7 @@ class LocationService : Service() {
         broadcastReceiverIntentFilter.addAction(C.NOTIFICATION_ACTION_WP)
         broadcastReceiverIntentFilter.addAction(C.LOCATION_UPDATE_ACTION)
 
-
         registerReceiver(broadcastReceiver, broadcastReceiverIntentFilter)
-
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -88,11 +95,12 @@ class LocationService : Service() {
             }
         }
 
+        getRestToken()
+
         getLastLocation()
 
         createLocationRequest()
         requestLocationUpdates()
-
     }
 
     fun requestLocationUpdates() {
@@ -115,8 +123,7 @@ class LocationService : Service() {
         Log.i(TAG, "New location: $location")
         if (currentLocation == null){
             locationStart = location
-            //locationCP = location
-            //locationWP = location
+
         } else {
             distanceOverallDirect = location.distanceTo(locationStart)
             distanceOverallTotal += location.distanceTo(currentLocation)
@@ -137,12 +144,13 @@ class LocationService : Service() {
 
         showNotification()
 
+        saveRestLocation(location, C.REST_LOCATIONID_LOC)
+
         // broadcast new location to UI
         val intent = Intent(C.LOCATION_UPDATE_ACTION)
         intent.putExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, location.latitude)
         intent.putExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, location.longitude)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-
     }
 
     private fun createLocationRequest() {
@@ -188,11 +196,9 @@ class LocationService : Service() {
 
         timer.cancel()
         timer.purge()
-        curSpentTime = null
+        curSpentTime = 0L
         curCPStartTime = null
         curWPStartTime = null
-        curCPSet = false
-        curWPSet = false
         checkpoints = arrayListOf<Location>()
     }
 
@@ -257,25 +263,24 @@ class LocationService : Service() {
         notifyview.setOnClickPendingIntent(R.id.imageButtonCP, pendingIntentCp)
         notifyview.setOnClickPendingIntent(R.id.imageButtonWP, pendingIntentWp)
 
-        notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
-
         val intent = Intent(C.STATISTICS_UPDATE_ACTION)
 
+        // handle overall changes
+        val duration = Helpers.getTimeString(curSpentTime)
+        val tempo = Helpers.getPace(curSpentTime, distanceOverallTotal)
+
+        notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
+        notifyview.setTextViewText(R.id.textViewOverallDuration, duration)
+        notifyview.setTextViewText(R.id.textViewOverallTempo, tempo)
+
         intent.putExtra(C.STATISTICS_UPDATE_OVERALL_TOTAL, "%.2f".format(distanceOverallTotal))
-        if (curSpentTime != null) {
-            val duration = findTimeStringFromSeconds(curSpentTime!!.toDouble(), true)
-            val tempo = findTimeStringFromSeconds(calcMinutesPerKm(curSpentTime!!, distanceOverallTotal), false)
+        intent.putExtra(C.STATISTICS_UPDATE_OVERALL_DURATION, duration)
+        intent.putExtra(C.STATISTICS_UPDATE_OVERALL_TEMPO, tempo)
 
-            notifyview.setTextViewText(R.id.textViewOverallDuration, duration)
-            notifyview.setTextViewText(R.id.textViewOverallTempo, tempo)
-
-            intent.putExtra(C.STATISTICS_UPDATE_OVERALL_DURATION, duration)
-            intent.putExtra(C.STATISTICS_UPDATE_OVERALL_TEMPO, tempo)
-        }
-
-        if (curWPSet && curWPStartTime != null) {
-            val time : Int = ((Date().time - curWPStartTime!!.time)*0.001).toInt()
-            val wpTempoString = findTimeStringFromSeconds(calcMinutesPerKm(time, distanceWPTotal), false)
+        // handle wp changes
+        if (locationWP != null && curWPStartTime != null) {
+            val time : Long = Date().time - curWPStartTime!!.time
+            val wpTempoString = Helpers.getPace(time, distanceWPTotal)
 
             notifyview.setTextViewText(R.id.textViewWPDirect, "%.2f".format(distanceWPDirect))
             notifyview.setTextViewText(R.id.textViewWPTotal, "%.2f".format(distanceWPTotal))
@@ -286,9 +291,10 @@ class LocationService : Service() {
             intent.putExtra(C.STATISTICS_UPDATE_WP_TEMPO, wpTempoString)
         }
 
-        if (curCPSet && curCPStartTime != null) {
-            val time : Int = ((Date().time - curCPStartTime!!.time)*0.001).toInt()
-            val cpTempoString = findTimeStringFromSeconds(calcMinutesPerKm(time, distanceCPTotal), false)
+        // handle cp changes
+        if (locationCP != null && curCPStartTime != null) {
+            val time : Long = Date().time - curCPStartTime!!.time
+            val cpTempoString = Helpers.getPace(time, distanceCPTotal)
 
             notifyview.setTextViewText(R.id.textViewCPTotal, "%.2f".format(distanceCPTotal))
             notifyview.setTextViewText(R.id.textViewCPDirect, "%.2f".format(distanceCPDirect))
@@ -297,24 +303,21 @@ class LocationService : Service() {
             intent.putExtra(C.STATISTICS_UPDATE_CP_TOTAL, "%.2f".format(distanceCPTotal))
             intent.putExtra(C.STATISTICS_UPDATE_CP_DIRECT, "%.2f".format(distanceCPDirect))
             intent.putExtra(C.STATISTICS_UPDATE_CP_TEMPO, cpTempoString)
-
         }
 
         if (locationWP != null) {
             intent.putExtra(C.CURRENT_WP_LATITUDE, locationWP!!.latitude)
             intent.putExtra(C.CURRENT_WP_LONGITUDE, locationWP!!.longitude)
         }
+
         if (checkpoints.size != 0) {
             var i = 0
-
             for (cp in checkpoints) {
                 intent.putExtra(C.RESTORE_CPS_LATITUDE + i.toString(), cp.latitude)
                 intent.putExtra(C.RESTORE_CPS_LONGITUDE + i.toString(), cp.longitude)
                 i++
             }
-
         }
-
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
@@ -332,11 +335,6 @@ class LocationService : Service() {
         // Super important, start as foreground service - ie android considers this as an active app. Need visual reminder - notification.
         // must be called within 5 secs after service starts.
         startForeground(C.NOTIFICATION_ID, builder.build())
-
-    }
-
-    private fun calcMinutesPerKm(seconds: Int, distance: Float) : Double {
-        return (distance / seconds.toFloat()) * 60 * 16.6666667
     }
 
     private fun sendWPdata() {
@@ -358,45 +356,136 @@ class LocationService : Service() {
             Log.d(TAG, intent!!.action)
             when(intent!!.action){
                 C.NOTIFICATION_ACTION_WP -> {
-                    curWPSet = true
                     curWPStartTime = Date()
                     locationWP = currentLocation
                     distanceWPDirect = 0f
                     distanceWPTotal = 0f
-
+                    saveRestLocation(locationWP!!, C.REST_LOCATIONID_WP)
                     sendWPdata()
                     showNotification()
                 }
                 C.NOTIFICATION_ACTION_CP -> {
-                    curCPSet = true
                     curCPStartTime = Date()
                     locationCP = currentLocation
                     distanceCPDirect = 0f
                     distanceCPTotal = 0f
 
                     checkpoints.add(locationCP!!)
+                    saveRestLocation(locationCP!!, C.REST_LOCATIONID_WP)
                     sendCPdata()
                     showNotification()
                 }
             }
         }
-
     }
 
-    private fun findTimeStringFromSeconds(seconds: Double?, showHours: Boolean) : String{
-        if (seconds!=null) {
-            var secondsTemp = seconds
-            val hours = (secondsTemp / 3600).toInt()
-            secondsTemp %= 3600
-            val minutes = (secondsTemp / 60).toInt()
-            secondsTemp %= 60
-            val secondsReturn = (secondsTemp).toInt()
-            if (hours != 0 || showHours) {
-                return "$hours:$minutes:$secondsReturn"
+    // DATABASE ACTIONS
+
+    private fun getRestToken() {
+        Log.d(TAG, "getRestToken")
+        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+
+        val requestJsonParameters = JSONObject()
+        requestJsonParameters.put("email", C.REST_USERNAME)
+        requestJsonParameters.put("password", C.REST_PASSWORD)
+
+        var httpRequest = JsonObjectRequest(
+            Request.Method.POST,
+            C.REST_BASE_URL + "account/login",
+            requestJsonParameters,
+            Response.Listener { response ->
+                Log.d(TAG, response.toString())
+                Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
+                mJwt = response.getString("token")
+                startRestTrackingSession()
+            },
+            Response.ErrorListener { error ->
+                Log.d(TAG, "ERROR: " + error.toString())
             }
-            return "$minutes:$secondsReturn"
+        )
+
+        handler.addToRequestQueue(httpRequest)
+    }
+
+    private fun startRestTrackingSession() {
+        Log.d(TAG, "startRestTrackingSession")
+        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val requestJsonParameters = JSONObject()
+        requestJsonParameters.put("name", Date().toString())
+        requestJsonParameters.put("description", Date().toString())
+
+        var httpRequest = object : JsonObjectRequest(
+            Request.Method.POST,
+            C.REST_BASE_URL + "GpsSessions",
+            requestJsonParameters,
+            Response.Listener { response ->
+                Log.d(TAG, response.toString())
+                Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
+                trackingSessionId = response.getString("id")
+            },
+            Response.ErrorListener { error ->
+                Log.d(TAG, "ERROR: " + error.toString())
+            }
+        ) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                for ((key, value) in super.getHeaders()) {
+                    headers[key] = value
+                }
+                headers["Authorization"] = "Bearer " + mJwt!!
+                return headers
+            }
         }
-        return ""
+
+        handler.addToRequestQueue(httpRequest)
+    }
+
+    private fun saveRestLocation(location: Location, location_type: String) {
+        Log.d(TAG, "saveRestLocation")
+
+        if (mJwt == null || trackingSessionId == null) {
+            return
+        }
+
+        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val requestJsonParameters = JSONObject()
+
+        requestJsonParameters.put("recordedAt", dateFormat.format(Date(location.time)))
+
+        requestJsonParameters.put("latitude", location.latitude)
+        requestJsonParameters.put("longitude", location.longitude)
+        requestJsonParameters.put("accuracy", location.accuracy)
+        requestJsonParameters.put("altitude", location.altitude)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            requestJsonParameters.put("verticalAccuracy", location.verticalAccuracyMeters)
+        }
+        requestJsonParameters.put("gpsSessionId", trackingSessionId)
+        requestJsonParameters.put("gpsLocationTypeId", location_type)
+
+
+        var httpRequest = object : JsonObjectRequest(
+            Request.Method.POST,
+            C.REST_BASE_URL + "GpsLocations",
+            requestJsonParameters,
+            Response.Listener { response ->
+                Log.d(TAG, response.toString())
+                Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
+
+            },
+            Response.ErrorListener { error ->
+                Log.d(TAG, "ERROR: " + error.toString())
+            }
+        ) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                for ((key, value) in super.getHeaders()) {
+                    headers[key] = value
+                }
+                headers["Authorization"] = "Bearer " + mJwt!!
+                return headers
+            }
+        }
+        handler.addToRequestQueue(httpRequest)
     }
 
 }

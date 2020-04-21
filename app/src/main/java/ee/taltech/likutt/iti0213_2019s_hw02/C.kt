@@ -40,5 +40,12 @@ class C {
         val RESTORE_CPS_LATITUDE = "ee.taltech.likutt.restore.cps_latitude"
         val RESTORE_CPS_LONGITUDE = "ee.taltech.likutt.restore.cps_longitude"
 
+        const val REST_BASE_URL = "https://sportmap.akaver.com/api/v1/"
+        const val REST_USERNAME = "test1@example.com"
+        const val REST_PASSWORD = "TestPassword1!"
+
+        const val REST_LOCATIONID_LOC = "00000000-0000-0000-0000-000000000001"
+        const val REST_LOCATIONID_WP = "00000000-0000-0000-0000-000000000002"
+        const val REST_LOCATIONID_CP = "00000000-0000-0000-0000-000000000003"
     }
 }

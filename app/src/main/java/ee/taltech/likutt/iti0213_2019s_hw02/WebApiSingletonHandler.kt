@@ -1,3 +1,5 @@
+package ee.taltech.likutt.iti0213_2019s_hw02
+
 import android.content.Context
 import android.text.TextUtils
 import android.util.Log
@@ -6,10 +8,8 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
 
 class WebApiSingletonHandler {
-
     companion object {
         private val TAG = this::class.java.declaringClass!!.simpleName
-        // keeping reference, so that if it exists then new one wont be created and old one will be returned
         private var instance: WebApiSingletonHandler? = null
         private var mContext: Context? = null
 
@@ -22,29 +22,34 @@ class WebApiSingletonHandler {
         }
     }
 
-    private constructor(context: Context) {
+    constructor(context: Context) {
         mContext = context
     }
 
-    // üks päringute järjekord, mida hakatakse järjest täitma
     private var requestQueue: RequestQueue? = null
-    get() {
-        if (field == null) {
-            field = Volley.newRequestQueue(mContext)
+        get() {
+            if (field == null) {
+                field = Volley.newRequestQueue(mContext)
+            }
+            return field
         }
-        return null
-    }
 
-    // takes in requests
-    fun <T> addToRequestQueue(request: Request<T>, tag: String? = null) {
+    fun <T> addToRequestQueue(request: Request<T>, tag: String) {
         Log.d(TAG, request.url)
-        request.tag = if (tag == null || TextUtils.isEmpty(tag)) TAG else tag
+        request.tag = if (TextUtils.isEmpty(tag)) TAG else tag
         requestQueue?.add(request)
     }
 
-    fun cancelPendingRequests(tag: String? = null) {
+    fun <T> addToRequestQueue(request: Request<T>) {
+        Log.d(TAG, request.url)
+        request.tag = TAG
+        requestQueue?.add(request)
+    }
+
+    fun cancelPendingRequest(tag: String) {
         if (requestQueue != null) {
-            requestQueue!!.cancelAll(if (tag == null || TextUtils.isEmpty(tag)) TAG else tag)
+
+            requestQueue!!.cancelAll(if (TextUtils.isEmpty(tag)) TAG else tag)
         }
     }
 }
