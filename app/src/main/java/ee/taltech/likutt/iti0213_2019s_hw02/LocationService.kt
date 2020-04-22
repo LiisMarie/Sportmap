@@ -371,7 +371,7 @@ class LocationService : Service() {
                     distanceCPTotal = 0f
 
                     checkpoints.add(locationCP!!)
-                    saveRestLocation(locationCP!!, C.REST_LOCATIONID_WP)
+                    saveRestLocation(locationCP!!, C.REST_LOCATIONID_CP)
                     sendCPdata()
                     showNotification()
                 }
@@ -382,6 +382,7 @@ class LocationService : Service() {
     // DATABASE ACTIONS
 
     private fun getRestToken() {
+
         Log.d(TAG, "getRestToken")
         var handler = WebApiSingletonHandler.getInstance(applicationContext)
 
@@ -413,6 +414,8 @@ class LocationService : Service() {
         val requestJsonParameters = JSONObject()
         requestJsonParameters.put("name", Date().toString())
         requestJsonParameters.put("description", Date().toString())
+        requestJsonParameters.put("paceMin", 6*60)
+        requestJsonParameters.put("paceMax", 18*60)
 
         var httpRequest = object : JsonObjectRequest(
             Request.Method.POST,
