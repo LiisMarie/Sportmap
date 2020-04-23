@@ -19,18 +19,18 @@ class HistoryActivity : AppCompatActivity() {
         private val TAG = this::class.java.declaringClass!!.simpleName
     }
 
-    private lateinit var db: DatabaseHelper
+    private lateinit var repo: Repository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
-        db = DatabaseHelper(this)
+        repo = Repository(this).open()
 
         // layoutManager - hoolitseb kuidas rowsid vahetada
         recyclerViewOldSessions.layoutManager = LinearLayoutManager(this)
         // adapter - joonistab asja välja (tuleb ise luua)
-        recyclerViewOldSessions.adapter = DataRecyclerViewAdapterSessions(this, db.getAllSessions())
+        recyclerViewOldSessions.adapter = DataRecyclerViewAdapterSessions(this, repo.getAllSessions())
     }
 
     fun openMenu(view: View) {

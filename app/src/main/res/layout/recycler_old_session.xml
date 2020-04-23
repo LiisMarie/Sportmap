@@ -16,7 +16,7 @@
         android:layout_marginEnd="8dp"
         android:text='"Session name"'
         android:textColor="#000000"
-        android:textSize="26sp"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -29,7 +29,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewSessionName" />
@@ -43,7 +43,7 @@
         android:layout_marginEnd="8dp"
         android:text='"Recorded at"'
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView9"
         app:layout_constraintTop_toBottomOf="@+id/textViewSessionDescription" />
@@ -56,7 +56,7 @@
         android:layout_marginEnd="8dp"
         android:text='"Duration"'
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView4"
         app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
         app:layout_constraintStart_toEndOf="@+id/imageView4"
@@ -70,7 +70,7 @@
         android:layout_marginEnd="8dp"
         android:text='"Speed"'
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView5"
         app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
         app:layout_constraintStart_toEndOf="@+id/imageView5"
@@ -84,7 +84,7 @@
         android:layout_marginEnd="8dp"
         android:text='"Distance"'
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView3"
         app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
         app:layout_constraintStart_toEndOf="@+id/imageView3"
@@ -128,7 +128,7 @@
         android:layout_marginTop="8dp"
         android:text="Recorded at:"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewSessionDescription" />
 
@@ -142,6 +142,7 @@
         android:hapticFeedbackEnabled="true"
         android:text="Load"
         android:textColor="#FFFAFA"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewRecordedAt" />
 
@@ -154,6 +155,7 @@
         android:backgroundTint="@color/colorControlButton"
         android:text="Edit"
         android:textColor="#FFFAFA"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonLoad" />
 
@@ -166,6 +168,7 @@
         android:backgroundTint="@color/colorControlButton"
         android:text="Delete"
         android:textColor="#FFFAFA"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonEdit" />
 

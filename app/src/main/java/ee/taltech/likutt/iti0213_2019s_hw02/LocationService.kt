@@ -72,8 +72,8 @@ class LocationService : Service() {
     private var trackingSessionId: String? = null
 
     // for local database
-    private lateinit var db: DatabaseHelper
-    private var localTrackingSessionId: String? = null
+    private lateinit var repo: Repository
+    private var localTrackingSessionId: Long? = null
 
     val task = object: TimerTask() {
         var startTime = Date()
@@ -87,7 +87,8 @@ class LocationService : Service() {
         Log.d(TAG, "onCreate")
         super.onCreate()
 
-        db = DatabaseHelper(this)
+        repo = Repository(this).open()
+
         startLocalTrackingSession()
 
         broadcastReceiverIntentFilter.addAction(C.NOTIFICATION_ACTION_CP)
@@ -207,7 +208,7 @@ class LocationService : Service() {
 
         // update data of session in local database
         //    fun updateSessionDurationSpeedDistance(id: String, duration: Long, speed: String, distance: Float) {
-        db.updateSessionDurationSpeedDistance(localTrackingSessionId!!, curSpentTime, Helpers.getPaceAsString(curSpentTime, distanceOverallTotal), distanceOverallTotal)
+        repo.updateSessionDurationSpeedDistance(localTrackingSessionId!!, curSpentTime, Helpers.getPaceAsString(curSpentTime, distanceOverallTotal), distanceOverallTotal)
 
         //stop location updates
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
@@ -412,7 +413,7 @@ class LocationService : Service() {
 
     private fun startLocalTrackingSession() {
         Log.d(TAG, "startLocalTrackingSession")
-        localTrackingSessionId = db.addSession(
+        localTrackingSessionId = repo.addSession(
                 Date().toString(),
                 Date().toString(),
                 Date().toString(),
@@ -427,7 +428,7 @@ class LocationService : Service() {
     private fun saveLocalLocation(location: Location, location_type: String, speed: Double?) {
         Log.d(TAG, "saveLocalLocation: " + location_type)
         if (localTrackingSessionId != null) {
-            db.addLocation(
+            repo.addLocation(
                     location.latitude,
                     location.longitude,
                     localTrackingSessionId!!,

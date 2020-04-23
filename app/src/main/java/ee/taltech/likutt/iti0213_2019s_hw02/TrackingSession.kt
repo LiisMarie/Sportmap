@@ -1,6 +1,6 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
-class TrackingSession(var id: String,
+class TrackingSession(var id: Long,
                       var name: String,
                       var description: String,
                       var recordedAt: String,
