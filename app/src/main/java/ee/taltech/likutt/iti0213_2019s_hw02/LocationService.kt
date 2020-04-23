@@ -64,9 +64,16 @@ class LocationService : Service() {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
+    private var minSpeed: Int = 6*60
+    private var maxSpeed: Int = 18*60
+
+    // for backend
     private var mJwt: String? = null
     private var trackingSessionId: String? = null
 
+    // for local database
+    private lateinit var db: DatabaseHelper
+    private var localTrackingSessionId: String? = null
 
     val task = object: TimerTask() {
         var startTime = Date()
@@ -79,6 +86,9 @@ class LocationService : Service() {
     override fun onCreate() {
         Log.d(TAG, "onCreate")
         super.onCreate()
+
+        db = DatabaseHelper(this)
+        startLocalTrackingSession()
 
         broadcastReceiverIntentFilter.addAction(C.NOTIFICATION_ACTION_CP)
         broadcastReceiverIntentFilter.addAction(C.NOTIFICATION_ACTION_WP)
@@ -95,7 +105,8 @@ class LocationService : Service() {
             }
         }
 
-        getRestToken()
+        // todo uncomment
+        //getRestToken()
 
         getLastLocation()
 
@@ -119,11 +130,17 @@ class LocationService : Service() {
         }
     }
 
+    private var prevLocation: Location? = null
+    private var prevTime: Long? = null
+
     private fun onNewLocation(location: Location) {
         Log.i(TAG, "New location: $location")
+
         if (currentLocation == null){
             locationStart = location
-
+            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, 0.toDouble())
+            prevLocation = location
+            prevTime = Date().time
         } else {
             distanceOverallDirect = location.distanceTo(locationStart)
             distanceOverallTotal += location.distanceTo(currentLocation)
@@ -139,6 +156,13 @@ class LocationService : Service() {
             }
 
         }
+
+        if (prevLocation != null && prevTime != null) {
+            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, Helpers.getSpeed(Date().time-prevTime!!, location.distanceTo(prevLocation)))
+            prevLocation = location
+            prevTime = Date().time
+        }
+
         // save the location for calculations
         currentLocation = location
 
@@ -180,6 +204,10 @@ class LocationService : Service() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         super.onDestroy()
+
+        // update data of session in local database
+        db.updateSessionDurationSpeedDistance(localTrackingSessionId!!, curSpentTime, Helpers.getPaceAsString(curSpentTime, distanceOverallTotal), distanceOverallTotal)
+        Log.d(TAG, "current tracking id: " + localTrackingSessionId)
 
         //stop location updates
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
@@ -267,7 +295,7 @@ class LocationService : Service() {
 
         // handle overall changes
         val duration = Helpers.getTimeString(curSpentTime)
-        val tempo = Helpers.getPace(curSpentTime, distanceOverallTotal)
+        val tempo = Helpers.getPaceAsString(curSpentTime, distanceOverallTotal)
 
         notifyview.setTextViewText(R.id.textViewOverallTotal, "%.2f".format(distanceOverallTotal))
         notifyview.setTextViewText(R.id.textViewOverallDuration, duration)
@@ -280,7 +308,7 @@ class LocationService : Service() {
         // handle wp changes
         if (locationWP != null && curWPStartTime != null) {
             val time : Long = Date().time - curWPStartTime!!.time
-            val wpTempoString = Helpers.getPace(time, distanceWPTotal)
+            val wpTempoString = Helpers.getPaceAsString(time, distanceWPTotal)
 
             notifyview.setTextViewText(R.id.textViewWPDirect, "%.2f".format(distanceWPDirect))
             notifyview.setTextViewText(R.id.textViewWPTotal, "%.2f".format(distanceWPTotal))
@@ -294,7 +322,7 @@ class LocationService : Service() {
         // handle cp changes
         if (locationCP != null && curCPStartTime != null) {
             val time : Long = Date().time - curCPStartTime!!.time
-            val cpTempoString = Helpers.getPace(time, distanceCPTotal)
+            val cpTempoString = Helpers.getPaceAsString(time, distanceCPTotal)
 
             notifyview.setTextViewText(R.id.textViewCPTotal, "%.2f".format(distanceCPTotal))
             notifyview.setTextViewText(R.id.textViewCPDirect, "%.2f".format(distanceCPDirect))
@@ -371,6 +399,7 @@ class LocationService : Service() {
                     distanceCPTotal = 0f
 
                     checkpoints.add(locationCP!!)
+                    saveLocalLocation(locationCP!!, C.LOCAL_LOCATION_TYPE_CP, null)
                     saveRestLocation(locationCP!!, C.REST_LOCATIONID_CP)
                     sendCPdata()
                     showNotification()
@@ -379,7 +408,38 @@ class LocationService : Service() {
         }
     }
 
-    // DATABASE ACTIONS
+    // LOCAL DATABASE ACTIONS
+
+    private fun startLocalTrackingSession() {
+        Log.d(TAG, "startLocalTrackingSession")
+        localTrackingSessionId = db.addSession(
+                Date().toString(),
+                Date().toString(),
+                Date().toString(),
+                0,
+                0.toString(),
+                0f,
+                minSpeed,
+                maxSpeed
+        )
+    }
+
+    private fun saveLocalLocation(location: Location, location_type: String, speed: Double?) {
+        Log.d(TAG, "saveLocalLocation: " + location_type)
+        if (localTrackingSessionId != null) {
+            db.addLocation(
+                    location.latitude,
+                    location.longitude,
+                    localTrackingSessionId!!,
+                    location_type,
+                    speed,
+                    Date().toString()
+            )
+        }
+
+    }
+
+    // BACKEND DATABASE ACTIONS
 
     private fun getRestToken() {
 
@@ -414,8 +474,8 @@ class LocationService : Service() {
         val requestJsonParameters = JSONObject()
         requestJsonParameters.put("name", Date().toString())
         requestJsonParameters.put("description", Date().toString())
-        requestJsonParameters.put("paceMin", 6*60)
-        requestJsonParameters.put("paceMax", 18*60)
+        requestJsonParameters.put("paceMin", minSpeed)
+        requestJsonParameters.put("paceMax", maxSpeed)
 
         var httpRequest = object : JsonObjectRequest(
             Request.Method.POST,
