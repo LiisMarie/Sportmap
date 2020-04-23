@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.recycler_old_session.view.*
 import org.json.JSONObject
+import java.math.RoundingMode
 
 class DataRecyclerViewAdapterSessions (val context: Context, private val oldSessions: List<TrackingSession>) :
     RecyclerView.Adapter<DataRecyclerViewAdapterSessions.ViewHolder>() {
@@ -33,9 +34,9 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         holder.itemView.textViewSessionName.text = session.name
         holder.itemView.textViewSessionDescription.text = session.description
         holder.itemView.textViewRecordedAt.text = session.recordedAt
-        holder.itemView.textViewDistance.text = session.duration.toString()
-        holder.itemView.textViewDuration.text = session.speed
-        holder.itemView.textViewSpeed.text = session.distance.toString()
+        holder.itemView.textViewDistance.text = String.format("%.2f", session.distance)
+        holder.itemView.textViewDuration.text = Helpers.getTimeString(session.duration)
+        holder.itemView.textViewSpeed.text = session.speed
 
         holder.itemView.buttonLoad.setOnClickListener {
             context.startActivity(Intent(context, ViewOldSessionActivity::class.java))

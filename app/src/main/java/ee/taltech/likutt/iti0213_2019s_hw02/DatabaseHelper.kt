@@ -217,7 +217,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         contentValues.put(SESSION_DURATION, duration)
         contentValues.put(SESSION_SPEED, speed)
         contentValues.put(SESSION_DISTANCE, distance)
-        val where = "$SESSION_ID=$id"
+        val where = "$SESSION_ID='$id'"
         db.update(SESSION_TABLE_NAME, contentValues, where, null)
         db.close()
     }

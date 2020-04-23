@@ -206,8 +206,8 @@ class LocationService : Service() {
         super.onDestroy()
 
         // update data of session in local database
+        //    fun updateSessionDurationSpeedDistance(id: String, duration: Long, speed: String, distance: Float) {
         db.updateSessionDurationSpeedDistance(localTrackingSessionId!!, curSpentTime, Helpers.getPaceAsString(curSpentTime, distanceOverallTotal), distanceOverallTotal)
-        Log.d(TAG, "current tracking id: " + localTrackingSessionId)
 
         //stop location updates
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
