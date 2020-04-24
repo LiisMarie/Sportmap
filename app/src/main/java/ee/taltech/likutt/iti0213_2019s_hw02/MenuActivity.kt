@@ -21,6 +21,8 @@ class MenuActivity : AppCompatActivity() {
         val intent = Intent(this, HistoryActivity::class.java)
         startActivity(intent)
     }
+
     fun openProfileView(view: View) {}
+
     fun openSettingsView(view: View) {}
 }

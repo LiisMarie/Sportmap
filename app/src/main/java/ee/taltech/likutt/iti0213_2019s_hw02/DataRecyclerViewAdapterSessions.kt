@@ -59,8 +59,8 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
     // tegeleb asjade cacheimisega ja kustutamisega
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
+    // session deletion
     fun deleteSession(sessionId : Long) {
-
         AlertDialog.Builder(context)
                 .setTitle("Warning")
                 .setMessage("Do you want to delete this session?")
