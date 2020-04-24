@@ -1,7 +1,10 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,10 +52,28 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         }
 
         holder.itemView.buttonDelete.setOnClickListener {
-
+            deleteSession(session.id)
         }
     }
 
     // tegeleb asjade cacheimisega ja kustutamisega
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    fun deleteSession(sessionId : Long) {
+
+        AlertDialog.Builder(context)
+                .setTitle("Warning")
+                .setMessage("Do you want to delete this session?")
+                .setIcon(R.drawable.twotone_warning_24)
+                .setPositiveButton("YES", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface?, whichButton: Int) {
+                        val repo = Repository(context).open()
+                        repo.deleteSessionWithItsLocations(sessionId)
+
+                        var intent = Intent(context, HistoryActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                })
+                .setNegativeButton("NO", null).show()
+    }
 }

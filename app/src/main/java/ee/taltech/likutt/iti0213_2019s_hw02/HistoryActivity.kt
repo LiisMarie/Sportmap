@@ -27,6 +27,11 @@ class HistoryActivity : AppCompatActivity() {
 
         repo = Repository(this).open()
 
+        val locationss = repo.getAllLocations()
+        for (loc in locationss) {
+            Log.d("LOCATION: ", loc.toString())
+        }
+
         // layoutManager - hoolitseb kuidas rowsid vahetada
         recyclerViewOldSessions.layoutManager = LinearLayoutManager(this)
         // adapter - joonistab asja välja (tuleb ise luua)

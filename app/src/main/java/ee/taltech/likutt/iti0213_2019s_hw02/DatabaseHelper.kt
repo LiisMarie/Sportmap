@@ -9,7 +9,7 @@ import android.util.Log
 
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
-        const val DATABASE_NAME = "app.db"
+        const val DATABASE_NAME = "sportapp.db"
         const val DATABASE_VERSION = 1
 
         const val SESSION_TABLE_NAME = "SESSIONS"

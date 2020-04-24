@@ -112,6 +112,43 @@ class Repository(val context: Context) {
         return cursor
     }
 
+    fun getAllLocations(): List<TrackingLocation> {
+        val trackingLocations = ArrayList<TrackingLocation>()
+        val columns = arrayOf(
+                DatabaseHelper.LOCATION_ID,
+                DatabaseHelper.LOCATION_LATITUDE,
+                DatabaseHelper.LOCATION_LONGITUDE,
+                DatabaseHelper.LOCATION_RECORDED_AT,
+                DatabaseHelper.LOCATION_SESSION_ID,
+                DatabaseHelper.LOCATION_TYPE,
+                DatabaseHelper.LOCATION_SPEED
+        )
+        val orderBy = "${DatabaseHelper.LOCATION_RECORDED_AT} DESC"
+        val cursor = db.query(
+                DatabaseHelper.LOCATION_TABLE_NAME,
+                columns,
+                null,
+                null,
+                null,
+                null,
+                orderBy
+        )
+        while (cursor.moveToNext()){
+            trackingLocations.add(
+                    TrackingLocation(
+                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.LOCATION_ID)),
+                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_LATITUDE)),
+                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_LONGITUDE)),
+                            cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_RECORDED_AT)),
+                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SESSION_ID)),
+                            cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_TYPE)),
+                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SPEED))
+                    )
+            )
+        }
+        return trackingLocations;
+    }
+
     fun getAllSessions(): List<TrackingSession>{
         val trackingSessions = ArrayList<TrackingSession>()
         val cursor = fetchSessions()
@@ -196,4 +233,11 @@ class Repository(val context: Context) {
 
     // delete
 
+    fun deleteSessionWithItsLocations(id: Long) {
+        val where = "${DatabaseHelper.SESSION_ID}='$id'"
+        db.delete(DatabaseHelper.SESSION_TABLE_NAME, where, null)
+        val where2 = "${DatabaseHelper.LOCATION_SESSION_ID}='$id'"
+        db.delete(DatabaseHelper.LOCATION_TABLE_NAME, where2, null)
+
+    }
 }
