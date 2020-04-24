@@ -1,8 +1,8 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
 class TrackingLocation(var id: Int,
-                       var latitude: Long,
-                       var longitude: Long,
+                       var latitude: Double,
+                       var longitude: Double,
                        var recordedAt: String,
                        var sessionId: Long,
                        var type: String,

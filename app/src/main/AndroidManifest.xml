@@ -23,6 +23,7 @@
         <activity android:name=".RenameOldSessionActivity"/>
         <activity android:name=".ViewOldSessionActivity" />
         <activity android:name=".HistoryActivity" />
+        <activity android:name=".ViewOldSessionActivity" />
         <activity android:name=".MenuActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

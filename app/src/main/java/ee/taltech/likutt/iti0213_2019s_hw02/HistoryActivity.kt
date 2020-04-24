@@ -2,16 +2,10 @@ package ee.taltech.likutt.iti0213_2019s_hw02
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.JsonObjectRequest
 import kotlinx.android.synthetic.main.activity_history.*
-import org.json.JSONObject
 
 
 class HistoryActivity : AppCompatActivity() {

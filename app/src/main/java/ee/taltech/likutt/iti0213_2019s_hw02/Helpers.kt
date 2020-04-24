@@ -1,5 +1,10 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import java.util.concurrent.TimeUnit
 
 class Helpers {
@@ -32,6 +37,19 @@ class Helpers {
 
         fun getSpeed(millis: Long, distance: Float): Double {
             return millis / 60.0 / distance
+        }
+
+        fun getMarkerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
+            val canvas = Canvas()
+            val bitmap: Bitmap = Bitmap.createBitmap(
+                    drawable.intrinsicWidth,
+                    drawable.intrinsicHeight,
+                    Bitmap.Config.ARGB_8888
+            )
+            canvas.setBitmap(bitmap)
+            drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+            drawable.draw(canvas)
+            return BitmapDescriptorFactory.fromBitmap(bitmap)
         }
 
     }

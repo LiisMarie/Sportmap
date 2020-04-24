@@ -126,6 +126,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         val currentLatLng = LatLng(59.4367, 24.7533)  // todo set another starting point
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in on given loc
+
     }
 
     // ============================================== LIFECYCLE CALLBACKS =============================================
@@ -286,7 +287,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // when on 8 Oreo or higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                C.NOTIFICATION_CHANNEL,
+                    C.NOTIFICATION_CHANNEL,
                 "Default channel",
                 NotificationManager.IMPORTANCE_LOW
             );
@@ -318,7 +319,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // request previously, but didn't check the "Don't ask again" checkbox.
         if (shouldProvideRationale) {
             Log.i(
-                TAG,
+                    TAG,
                 "Displaying permission rationale to provide additional context."
             )
             Snackbar.make(
@@ -331,7 +332,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        C.REQUEST_PERMISSIONS_REQUEST_CODE
+                            C.REQUEST_PERMISSIONS_REQUEST_CODE
                     )
                 })
                 .show()
@@ -343,7 +344,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                C.REQUEST_PERMISSIONS_REQUEST_CODE
+                    C.REQUEST_PERMISSIONS_REQUEST_CODE
             )
         }
     }
@@ -374,7 +375,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                         intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                         val uri: Uri = Uri.fromParts(
                             "package",
-                            BuildConfig.APPLICATION_ID, null
+                                BuildConfig.APPLICATION_ID, null
                         )
                         intent.data = uri
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -537,7 +538,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun drawWaypoint(wpLatLng: LatLng) {
         val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_flag_black_24)
-        val markerIcon: BitmapDescriptor = getMarkerIconFromDrawable(circleDrawable)
+        val markerIcon: BitmapDescriptor = Helpers.getMarkerIconFromDrawable(circleDrawable)
         wpMarker = mMap.addMarker(
             MarkerOptions()
                 .position(wpLatLng)
@@ -548,26 +549,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun drawCheckpoint(cpLatLng: LatLng) {
         val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_beenhere_black_24)
-        val markerIcon: BitmapDescriptor = getMarkerIconFromDrawable(circleDrawable)
+        val markerIcon: BitmapDescriptor = Helpers.getMarkerIconFromDrawable(circleDrawable)
         mMap.addMarker(
             MarkerOptions()
                 .position(cpLatLng)
                 //.title("CP")
                 .icon(markerIcon)
         )
-    }
-
-    private fun getMarkerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
-        val canvas = Canvas()
-        val bitmap: Bitmap = Bitmap.createBitmap(
-            drawable.intrinsicWidth,
-            drawable.intrinsicHeight,
-            Bitmap.Config.ARGB_8888
-        )
-        canvas.setBitmap(bitmap)
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-        drawable.draw(canvas)
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
     // ============================================== BROADCAST RECEIVER =============================================

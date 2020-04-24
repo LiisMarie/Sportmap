@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,7 +39,7 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         holder.itemView.textViewSpeed.text = session.speed
 
         holder.itemView.buttonLoad.setOnClickListener {
-            var intent = Intent(context, ViewOldSessionActivity::class.java)
+            var intent = Intent(context, ViewOldSessionActivity::class.java)  // todo change
             intent.putExtra(C.OLD_SESSION_ID, session.id)
             context.startActivity(intent)
         }

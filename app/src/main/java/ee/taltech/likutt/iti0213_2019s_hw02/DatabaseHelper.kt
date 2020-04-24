@@ -1,11 +1,8 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
-import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.util.Log
 
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
@@ -50,8 +47,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val SQL_LOCATION_CREATE_TABLE =
                 "create table if not exists $LOCATION_TABLE_NAME(" +
                         "$LOCATION_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "$LOCATION_LATITUDE INTEGER NOT NULL, " +
-                        "$LOCATION_LONGITUDE INTEGER NOT NULL, " +
+                        "$LOCATION_LATITUDE REAL NOT NULL, " +
+                        "$LOCATION_LONGITUDE REAL NOT NULL, " +
                         "$LOCATION_RECORDED_AT TEXT NOT NULL, " +
                         "$LOCATION_SESSION_ID TEXT NOT NULL, " +
                         "$LOCATION_TYPE TEXT NOT NULL, " +

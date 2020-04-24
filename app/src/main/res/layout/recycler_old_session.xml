@@ -102,7 +102,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewRecordedAt"
-        app:srcCompat="@drawable/baseline_directions_run_black_48" />
+        app:srcCompat="@drawable/baseline_directions_run_black_36" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -115,7 +115,7 @@
         app:layout_constraintHorizontal_bias="0.511"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/textViewRecordedAt"
-        app:srcCompat="@drawable/baseline_timer_black_48" />
+        app:srcCompat="@drawable/baseline_timer_black_36" />
 
     <ImageView
         android:id="@+id/imageView5"
@@ -127,7 +127,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toBottomOf="@+id/textViewRecordedAt"
-        app:srcCompat="@drawable/baseline_speed_black_48" />
+        app:srcCompat="@drawable/baseline_speed_black_36" />
 
     <TextView
         android:id="@+id/textView9"

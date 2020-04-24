@@ -42,6 +42,7 @@ class C {
 
         val OLD_SESSION_ID = "ee.taltech.likutt.old_session_id"
 
+        const val LOCAL_LOCATION_TYPE_START = "start"
         const val LOCAL_LOCATION_TYPE_LOC = "loc"
         const val LOCAL_LOCATION_TYPE_CP = "cp"
         const val LOCAL_LOCATION_TYPE_WP = "wp"

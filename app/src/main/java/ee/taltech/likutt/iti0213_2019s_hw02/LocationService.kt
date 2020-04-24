@@ -139,7 +139,7 @@ class LocationService : Service() {
 
         if (currentLocation == null){
             locationStart = location
-            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, 0.toDouble())
+            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_START, 0.toDouble())
             prevLocation = location
             prevTime = Date().time
         } else {
@@ -427,6 +427,10 @@ class LocationService : Service() {
 
     private fun saveLocalLocation(location: Location, location_type: String, speed: Double?) {
         Log.d(TAG, "saveLocalLocation: " + location_type)
+        Log.d(TAG, "saveLocalLocation latitude: " + location.latitude)
+        Log.d(TAG, "saveLocalLocation longitude: " + location.longitude)
+
+        val lat : Double = location.longitude
         if (localTrackingSessionId != null) {
             repo.addLocation(
                     location.latitude,

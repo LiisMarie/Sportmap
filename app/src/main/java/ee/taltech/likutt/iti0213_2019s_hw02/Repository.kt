@@ -9,7 +9,7 @@ class Repository(val context: Context) {
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var db: SQLiteDatabase
 
-    fun open(): Repository{
+    fun open(): Repository {
         dbHelper = DatabaseHelper(context)
         db = dbHelper.writableDatabase
 
@@ -96,7 +96,7 @@ class Repository(val context: Context) {
                 DatabaseHelper.LOCATION_TYPE,
                 DatabaseHelper.LOCATION_SPEED
         )
-        val orderBy = "${DatabaseHelper.LOCATION_RECORDED_AT} DESC"
+        val orderBy = "${DatabaseHelper.LOCATION_ID} ASC"
         val where = "${DatabaseHelper.LOCATION_SESSION_ID} = $sessionId"
 
         val cursor = db.query(
@@ -110,43 +110,6 @@ class Repository(val context: Context) {
         )
 
         return cursor
-    }
-
-    fun getAllLocations(): List<TrackingLocation> {
-        val trackingLocations = ArrayList<TrackingLocation>()
-        val columns = arrayOf(
-                DatabaseHelper.LOCATION_ID,
-                DatabaseHelper.LOCATION_LATITUDE,
-                DatabaseHelper.LOCATION_LONGITUDE,
-                DatabaseHelper.LOCATION_RECORDED_AT,
-                DatabaseHelper.LOCATION_SESSION_ID,
-                DatabaseHelper.LOCATION_TYPE,
-                DatabaseHelper.LOCATION_SPEED
-        )
-        val orderBy = "${DatabaseHelper.LOCATION_RECORDED_AT} DESC"
-        val cursor = db.query(
-                DatabaseHelper.LOCATION_TABLE_NAME,
-                columns,
-                null,
-                null,
-                null,
-                null,
-                orderBy
-        )
-        while (cursor.moveToNext()){
-            trackingLocations.add(
-                    TrackingLocation(
-                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.LOCATION_ID)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_LATITUDE)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_LONGITUDE)),
-                            cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_RECORDED_AT)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SESSION_ID)),
-                            cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_TYPE)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SPEED))
-                    )
-            )
-        }
-        return trackingLocations;
     }
 
     fun getAllSessions(): List<TrackingSession>{
@@ -198,8 +161,8 @@ class Repository(val context: Context) {
             trackingLocations.add(
                     TrackingLocation(
                             cursor.getInt(cursor.getColumnIndex(DatabaseHelper.LOCATION_ID)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_LATITUDE)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_LONGITUDE)),
+                            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_LATITUDE)),
+                            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_LONGITUDE)),
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_RECORDED_AT)),
                             cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SESSION_ID)),
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_TYPE)),
