@@ -2,11 +2,10 @@ package ee.taltech.likutt.iti0213_2019s_hw02
 
 import android.content.Intent
 import android.graphics.drawable.Drawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -14,6 +13,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
+
 
 class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
@@ -29,6 +30,10 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_old_session)
+
+        // clear the track on map
+        Helpers.clearMapPolylineOptions()
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
@@ -49,7 +54,7 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         mMap.uiSettings.isZoomControlsEnabled = true
-        mMap.isMyLocationEnabled = true
+        mMap.isMyLocationEnabled = false
 
         if (session != null) {
             displayTrack()
@@ -59,18 +64,35 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
     fun displayTrack() {
         Log.d(TAG, "displayTrack")
         val locations = repo.getLocationsForGivenSession(session!!.id)
-        for (loc in locations) {
-            Log.d(TAG, "LOCATION: " + loc.toString())
-            val locLatLng = LatLng(loc.latitude.toDouble(), loc.longitude.toDouble())
+        val colorMap = Helpers.generateColorsForSpeeds(session!!.minSpeed, session!!.maxSpeed)
+
+        var i = 0
+        var prevLoc : LatLng? = null
+        while (i < locations.size) {
+            var loc = locations[i]
+
+            val curLatLng = LatLng(loc.latitude, loc.longitude)
 
             if (loc.type == C.LOCAL_LOCATION_TYPE_START) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(locLatLng, 17f))  // zooms in on start location
-                drawStart(locLatLng)
-            } else if (loc.type == C.LOCAL_LOCATION_TYPE_CP) {
-                drawCheckpoint(locLatLng)
-            }
-        }
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLatLng, 17f))  // zooms in on start location
+                drawStart(curLatLng)
+                prevLoc = curLatLng
 
+            } else if (loc.type == C.LOCAL_LOCATION_TYPE_CP) {
+                drawCheckpoint(curLatLng)
+
+            } else if (loc.type == C.LOCAL_LOCATION_TYPE_LOC){
+                var speedSecPerKm : Double = 0.toDouble()
+                if (loc.speed != null) {
+                    speedSecPerKm = loc.speed!!.times(60)
+                }
+
+                mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc!!).width(10f).color(Helpers.getColorForSpeed(colorMap, speedSecPerKm, session!!.minSpeed, session!!.maxSpeed)))
+                prevLoc = curLatLng
+            }
+
+            i += 1
+        }
     }
 
     private fun drawStart(startLatLng: LatLng) {

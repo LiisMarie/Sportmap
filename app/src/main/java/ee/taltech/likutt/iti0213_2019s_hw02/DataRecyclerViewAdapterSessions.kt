@@ -39,7 +39,7 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         holder.itemView.textViewSpeed.text = session.speed
 
         holder.itemView.buttonLoad.setOnClickListener {
-            var intent = Intent(context, ViewOldSessionActivity::class.java)  // todo change
+            var intent = Intent(context, ViewOldSessionActivity::class.java)
             intent.putExtra(C.OLD_SESSION_ID, session.id)
             context.startActivity(intent)
         }

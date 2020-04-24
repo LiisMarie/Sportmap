@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import androidx.core.database.getDoubleOrNull
 
 class Repository(val context: Context) {
     private lateinit var dbHelper: DatabaseHelper
@@ -166,7 +167,7 @@ class Repository(val context: Context) {
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_RECORDED_AT)),
                             cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SESSION_ID)),
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_TYPE)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SPEED))
+                            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_SPEED))
                     )
             )
         }

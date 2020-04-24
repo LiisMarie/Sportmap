@@ -426,11 +426,6 @@ class LocationService : Service() {
     }
 
     private fun saveLocalLocation(location: Location, location_type: String, speed: Double?) {
-        Log.d(TAG, "saveLocalLocation: " + location_type)
-        Log.d(TAG, "saveLocalLocation latitude: " + location.latitude)
-        Log.d(TAG, "saveLocalLocation longitude: " + location.longitude)
-
-        val lat : Double = location.longitude
         if (localTrackingSessionId != null) {
             repo.addLocation(
                     location.latitude,
