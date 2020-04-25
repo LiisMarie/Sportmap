@@ -109,8 +109,7 @@ class LocationService : Service() {
             }
         }
 
-        // todo uncomment
-        // getRestToken()
+        getRestToken()
 
         getLastLocation()
 
@@ -193,7 +192,7 @@ class LocationService : Service() {
         try {
             mFusedLocationClient.lastLocation
                 .addOnCompleteListener { task -> if (task.isSuccessful) {
-                    Log.w(TAG, "task successfull");
+                    Log.w(TAG, "task successfull")
                     if (task.result != null){
                         onNewLocation(task.result!!)
                     }
@@ -348,7 +347,7 @@ class LocationService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
         // construct and show notification
-        var builder = NotificationCompat.Builder(applicationContext,
+        val builder = NotificationCompat.Builder(applicationContext,
             C.NOTIFICATION_CHANNEL
         )
             .setSmallIcon(R.drawable.baseline_gps_fixed_24)
@@ -380,7 +379,7 @@ class LocationService : Service() {
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, intent!!.action)
-            when(intent!!.action){
+            when(intent.action){
                 C.NOTIFICATION_ACTION_WP -> {
                     curWPStartTime = Date()
                     locationWP = currentLocation
@@ -441,13 +440,13 @@ class LocationService : Service() {
     private fun getRestToken() {
 
         Log.d(TAG, "getRestToken")
-        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val handler = WebApiSingletonHandler.getInstance(applicationContext)
 
         val requestJsonParameters = JSONObject()
         requestJsonParameters.put("email", C.REST_USERNAME)
         requestJsonParameters.put("password", C.REST_PASSWORD)
 
-        var httpRequest = JsonObjectRequest(
+        val httpRequest = JsonObjectRequest(
             Request.Method.POST,
             C.REST_BASE_URL + "account/login",
             requestJsonParameters,
@@ -467,15 +466,15 @@ class LocationService : Service() {
 
     private fun startRestTrackingSession() {
         Log.d(TAG, "startRestTrackingSession")
-        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val handler = WebApiSingletonHandler.getInstance(applicationContext)
         val requestJsonParameters = JSONObject()
         requestJsonParameters.put("name", Date().toString())
         requestJsonParameters.put("description", Date().toString())
         requestJsonParameters.put("paceMin", minSpeed)
         requestJsonParameters.put("paceMax", maxSpeed)
 
-        var httpRequest = object : JsonObjectRequest(
-            Request.Method.POST,
+        val httpRequest = object : JsonObjectRequest(
+            Method.POST,
             C.REST_BASE_URL + "GpsSessions",
             requestJsonParameters,
             Response.Listener { response ->
@@ -507,7 +506,7 @@ class LocationService : Service() {
             return
         }
 
-        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val handler = WebApiSingletonHandler.getInstance(applicationContext)
         val requestJsonParameters = JSONObject()
 
         requestJsonParameters.put("recordedAt", dateFormat.format(Date(location.time)))
@@ -523,8 +522,8 @@ class LocationService : Service() {
         requestJsonParameters.put("gpsLocationTypeId", location_type)
 
 
-        var httpRequest = object : JsonObjectRequest(
-            Request.Method.POST,
+        val httpRequest = object : JsonObjectRequest(
+            Method.POST,
             C.REST_BASE_URL + "GpsLocations",
             requestJsonParameters,
             Response.Listener { response ->
