@@ -159,6 +159,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             sensorManager.registerListener(this, magnetometer, SENSOR_DELAY_GAME)
         }
 
+        prevLatLng = null
         mapUpdated = false
     }
 
@@ -171,6 +172,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             sensorManager.unregisterListener(this, accelerometer)
             sensorManager.unregisterListener(this, magnetometer)
         }
+
+        prevLatLng = null
+        mapUpdated = false
     }
 
     override fun onStop() {
@@ -178,13 +182,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         super.onStop()
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+        prevLatLng = null
         mapUpdated = false
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         super.onDestroy()
-
+        prevLatLng = null
         mapUpdated = false
     }
 
@@ -193,6 +198,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         super.onRestart()
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, broadcastReceiverIntentFilter)
+        prevLatLng = null
         mapUpdated = false
     }
 
@@ -227,6 +233,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun startTracking() {
         resetUI()
+        prevLatLng = null
         if (Build.VERSION.SDK_INT >= 26) {
             // starting the FOREGROUND service
             // service has to display non-dismissable notification within 5 secs
@@ -569,6 +576,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     }
 
     private fun restoreMap(intent: Intent) {
+        mMap.clear()
         var sessionId = intent.getLongExtra(C.CURRENT_SESSION_ID, Long.MIN_VALUE)
         if (sessionId != Long.MIN_VALUE) {
             val repo = Repository(this).open()
