@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.android.synthetic.main.activity_view_old_session.*
+import kotlinx.android.synthetic.main.statistics_view_old_session.*
 
 
 class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -53,7 +54,9 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
             textViewSessionName.text = session!!.name
             toolbar.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT
             toolbar.requestLayout()
-
+            textViewDistance.text = String.format("%.2f", session!!.distance)
+            textViewSpeed.text = session!!.speed
+            textViewDuration.text = Helpers.getTimeString(session!!.duration)
         }
     }
 
