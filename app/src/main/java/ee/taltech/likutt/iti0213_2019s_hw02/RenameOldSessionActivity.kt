@@ -44,7 +44,9 @@ class RenameOldSessionActivity : AppCompatActivity() {
 
     private fun openHistory() {
         val intent = Intent(this, HistoryActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
         startActivity(intent)
+        finish()
     }
 
     fun saveSessionChanges(view: View) {
@@ -52,7 +54,9 @@ class RenameOldSessionActivity : AppCompatActivity() {
             repo.updateSessionNameDescription(session!!.id, editTextSessionName.text.toString(), editTextSessionDescription.text.toString())
             var intent = Intent(this, RenameOldSessionActivity::class.java)
             intent.putExtra(C.OLD_SESSION_ID, session!!.id)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
             startActivity(intent)
+            finish()
         } else {
             Toast.makeText(this, "Couldn't update session", Toast.LENGTH_SHORT).show()
         }

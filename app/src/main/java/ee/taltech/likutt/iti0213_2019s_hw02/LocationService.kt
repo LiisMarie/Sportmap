@@ -110,7 +110,7 @@ class LocationService : Service() {
         }
 
         // todo uncomment
-        //getRestToken()
+        getRestToken()
 
         getLastLocation()
 

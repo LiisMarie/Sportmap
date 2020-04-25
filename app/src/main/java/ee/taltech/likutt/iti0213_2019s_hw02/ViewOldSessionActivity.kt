@@ -131,6 +131,8 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun openHistory() {
         val intent = Intent(this, HistoryActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
         startActivity(intent)
+        finish()
     }
 }

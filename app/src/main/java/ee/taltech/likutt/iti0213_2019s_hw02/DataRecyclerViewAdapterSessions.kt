@@ -1,5 +1,6 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -70,7 +71,10 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                         repo.deleteSessionWithItsLocations(sessionId)
 
                         var intent = Intent(context, HistoryActivity::class.java)
+
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
                         context.startActivity(intent)
+                        (context as Activity).finish()
                     }
                 })
                 .setNegativeButton("NO", null).show()
