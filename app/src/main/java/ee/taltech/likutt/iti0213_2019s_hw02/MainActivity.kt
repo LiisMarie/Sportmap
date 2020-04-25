@@ -571,7 +571,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun makePolylineBetweenTwoPlaces(curLatLng: LatLng, prevLatLng: LatLng, speed: Double) {
         if (colorMap != null && minSpeed != null && maxSpeed != null) {
-            mMap.addPolyline(PolylineOptions().add(curLatLng, prevLatLng).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speed, minSpeed!!, maxSpeed!!)))
+            mMap.addPolyline(PolylineOptions().add(curLatLng, prevLatLng).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speed.times(60), minSpeed!!, maxSpeed!!)))
         }
     }
 
@@ -592,13 +592,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     drawCheckpoint(curLatLng)
 
                 } else if (loc.type == C.LOCAL_LOCATION_TYPE_LOC){
-                    var speedSecPerKm : Double = 0.toDouble()
+                    var speed : Double = 0.toDouble()
                     if (loc.speed != null) {
-                        speedSecPerKm = loc.speed!!.times(60)
+                        speed = loc.speed!!
                     }
 
-                    if (colorMap != null && minSpeed != null && maxSpeed != null && prevLoc != null) {
-                        mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speedSecPerKm, minSpeed!!, maxSpeed!!)))
+                    if (prevLoc != null) {
+                        makePolylineBetweenTwoPlaces(curLatLng, prevLoc, speed)
+                        //mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speedSecPerKm, minSpeed!!, maxSpeed!!)))
                     }
                     prevLoc = curLatLng
                 }
@@ -626,7 +627,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                         }
 
                         if (prevLatLng != null && !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
-                            makePolylineBetweenTwoPlaces(currentLatLng, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN))
+                            makePolylineBetweenTwoPlaces(currentLatLng, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_SPEED, Double.NaN))
                         }
                         prevLatLng = currentLatLng
                     }
