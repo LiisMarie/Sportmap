@@ -67,6 +67,9 @@ class LocationService : Service() {
     private var minSpeed: Int = 6*60
     private var maxSpeed: Int = 18*60
 
+    private var prevLocation: Location? = null
+    private var prevTime: Long? = null
+
     // for backend
     private var mJwt: String? = null
     private var trackingSessionId: String? = null
@@ -131,9 +134,6 @@ class LocationService : Service() {
         }
     }
 
-    private var prevLocation: Location? = null
-    private var prevTime: Long? = null
-
     private fun onNewLocation(location: Location) {
         Log.i(TAG, "New location: $location")
 
@@ -158,11 +158,20 @@ class LocationService : Service() {
 
         }
 
+        // broadcast new location to UI
+        val intent = Intent(C.LOCATION_UPDATE_ACTION)
+        intent.putExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, location.latitude)
+        intent.putExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, location.longitude)
+
         if (prevLocation != null && prevTime != null) {
-            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, Helpers.getSpeed(Date().time-prevTime!!, location.distanceTo(prevLocation)))
+            val speed = Helpers.getSpeed(Date().time-prevTime!!, location.distanceTo(prevLocation))
+            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, speed)
             prevLocation = location
             prevTime = Date().time
+
+            intent.putExtra(C.LOCATION_UPDATE_ACTION_SPEED, speed)
         }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
         // save the location for calculations
         currentLocation = location
@@ -171,11 +180,6 @@ class LocationService : Service() {
 
         saveRestLocation(location, C.REST_LOCATIONID_LOC)
 
-        // broadcast new location to UI
-        val intent = Intent(C.LOCATION_UPDATE_ACTION)
-        intent.putExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, location.latitude)
-        intent.putExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, location.longitude)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     private fun createLocationRequest() {

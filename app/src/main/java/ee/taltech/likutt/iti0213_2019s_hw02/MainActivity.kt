@@ -9,8 +9,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.*
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.Sensor.TYPE_ACCELEROMETER
@@ -41,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.track_control.*
 import java.lang.Math.toDegrees
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
@@ -116,6 +115,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         accelerometer = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
 
+        // todo make them user configurable
+        minSpeed = 6*60
+        maxSpeed = 18*60
+        if (minSpeed != null && maxSpeed != null) {
+            // todo update colormap when speeds get changed
+            colorMap = Helpers.generateColorsForSpeeds(minSpeed!!, maxSpeed!!)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -558,6 +564,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         )
     }
 
+
+    private var prevLatLng : LatLng? = null
+
+    private var minSpeed: Long? = null
+    private var maxSpeed: Long? = null
+
+    private var colorMap: Map<List<Double>, Int>? = null
+
+    private fun makePolylineBetweenTwoPlaces(curLatLng: LatLng, prevLatLng: LatLng, speed: Double) {
+        if (colorMap != null && minSpeed != null && maxSpeed != null) {
+            mMap.addPolyline(PolylineOptions().add(curLatLng, prevLatLng).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speed, minSpeed!!, maxSpeed!!)))
+        }
+    }
+
     // ============================================== BROADCAST RECEIVER =============================================
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -574,6 +594,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                             //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
                             mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
                         }
+
+                        if (prevLatLng != null && !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
+                            makePolylineBetweenTwoPlaces(currentLatLng, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN))
+                        }
+                        prevLatLng = currentLatLng
                     }
 
                 }
@@ -611,7 +636,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                         }
                         trackingSet = true
                         dealWithTracking()
-
                     }
                 }
             }

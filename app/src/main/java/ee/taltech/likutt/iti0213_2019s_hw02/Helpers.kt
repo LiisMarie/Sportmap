@@ -69,19 +69,18 @@ class Helpers {
         }
 
         fun getColorForSpeed(colorMap: Map<List<Double>, Int>, speed: Double, minSpeed: Long, maxSpeed: Long) : Int{
-            Log.d("getColorForSpeed", colorMap.toString())
-            Log.d("getColorForSpeed", "speed: $speed, minspeed: $minSpeed, maxspeed: $maxSpeed")
+            //Log.d("getColorForSpeed", colorMap.toString())
+            //Log.d("getColorForSpeed", "speed: $speed, minspeed: $minSpeed, maxspeed: $maxSpeed")
             if (speed < minSpeed) {
-                Log.d("getColorForSpeed", "speed < minSpeed")
+                //Log.d("getColorForSpeed", "speed < minSpeed")
                 return Color.rgb(0, 255, 0)
             } else if (speed > maxSpeed) {
-                Log.d("getColorForSpeed", "speed > maxSpeed")
-
+                //Log.d("getColorForSpeed", "speed > maxSpeed")
                 return Color.rgb(255, 0, 0)
             }
             for ((k, v) in colorMap) {
                 if (k[0] <= speed && k[1] > speed) {
-                    Log.d("getColorForSpeed", k.toString() + " " + v)
+                    //Log.d("getColorForSpeed", k.toString() + " " + v)
                     return v
                 }
             }

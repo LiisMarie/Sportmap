@@ -10,6 +10,7 @@ class C {
 
         val LOCATION_UPDATE_ACTION_LATITUDE = "ee.taltech.likutt.location_update.latitude"
         val LOCATION_UPDATE_ACTION_LONGITUDE = "ee.taltech.likutt.location_update.longitude"
+        val LOCATION_UPDATE_ACTION_SPEED = "ee.taltech.likutt.location_update.speed"
 
         val NOTIFICATION_ID = 4321
         val REQUEST_PERMISSIONS_REQUEST_CODE = 34;
