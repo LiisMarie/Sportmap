@@ -27,6 +27,8 @@ class C {
         val STATISTICS_UPDATE_CP_DIRECT = "ee.taltech.likutt.statistics_update.cp_direct"
         val STATISTICS_UPDATE_CP_TEMPO = "ee.taltech.likutt.statistics_update.cp_tempo"
 
+        val CURRENT_SESSION_ID = "ee.taltech.likutt.current_session.id"
+
         val CURRENT_WP_LATITUDE = "ee.taltech.likutt.current_wp.latitude"
         val CURRENT_WP_LONGITUDE = "ee.taltech.likutt.current_wp.longitude"
 
@@ -38,8 +40,7 @@ class C {
         val RESTORE_TRACKING_SET = "ee.taltech.likutt.restore.tracking_set"
         val RESTORE_MAP_DIRECTION = "ee.taltech.likutt.restore.map_direction"
         val RESTORE_LOCATION_SERVICE_ACTIVE = "ee.taltech.likutt.restore.location_service_active"
-        val RESTORE_CPS_LATITUDE = "ee.taltech.likutt.restore.cps_latitude"
-        val RESTORE_CPS_LONGITUDE = "ee.taltech.likutt.restore.cps_longitude"
+
 
         val OLD_SESSION_ID = "ee.taltech.likutt.old_session_id"
 

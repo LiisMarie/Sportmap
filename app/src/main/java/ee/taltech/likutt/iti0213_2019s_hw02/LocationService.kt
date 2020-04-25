@@ -343,14 +343,7 @@ class LocationService : Service() {
             intent.putExtra(C.CURRENT_WP_LONGITUDE, locationWP!!.longitude)
         }
 
-        if (checkpoints.size != 0) {
-            var i = 0
-            for (cp in checkpoints) {
-                intent.putExtra(C.RESTORE_CPS_LATITUDE + i.toString(), cp.latitude)
-                intent.putExtra(C.RESTORE_CPS_LONGITUDE + i.toString(), cp.longitude)
-                i++
-            }
-        }
+        intent.putExtra(C.CURRENT_SESSION_ID, localTrackingSessionId)
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 

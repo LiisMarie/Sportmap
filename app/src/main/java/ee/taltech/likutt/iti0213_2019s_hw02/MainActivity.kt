@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private val broadcastReceiver = InnerBroadcastReceiver()
     private val broadcastReceiverIntentFilter: IntentFilter = IntentFilter()
 
-
     private var locationServiceActive = false
 
     private var mapCentered = true
@@ -62,9 +61,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private var curWP : LatLng? = null
     private var wpMarker : Marker? = null
-    private var checkpoints = arrayListOf<LatLng>()
 
     private var mapUpdated = false
+
+    // for track segment coloring
+    private var prevLatLng : LatLng? = null
+
+    private var minSpeed: Long? = null
+    private var maxSpeed: Long? = null
+
+    private var colorMap: Map<List<Double>, Int>? = null
 
     // compass start  https://github.com/andreas-mausch/compass
     private lateinit var sensorManager: SensorManager
@@ -282,12 +288,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         //Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
     }
 
-    private fun handleNewCheckpoint(cpLatLng: LatLng) {
-        checkpoints.add(cpLatLng)
-        drawCheckpoint(cpLatLng)
-        //Toast.makeText(this@MainActivity, "New checkpoint added", Toast.LENGTH_SHORT).show()
-    }
-
     // ============================================== NOTIFICATION CHANNEL CREATION =============================================
     private fun createNotificationChannel() {
         // when on 8 Oreo or higher
@@ -464,7 +464,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     fun buttonMenuOnClick(view: View) {
         Log.d(TAG, "buttonMenuOnClick")
-        // todo open menu
         val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
     }
@@ -538,7 +537,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         textViewCPTempo.text = ""
         curWP = null
         wpMarker = null
-        checkpoints = arrayListOf()
         mMap.clear()
     }
 
@@ -564,17 +562,41 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         )
     }
 
-
-    private var prevLatLng : LatLng? = null
-
-    private var minSpeed: Long? = null
-    private var maxSpeed: Long? = null
-
-    private var colorMap: Map<List<Double>, Int>? = null
-
     private fun makePolylineBetweenTwoPlaces(curLatLng: LatLng, prevLatLng: LatLng, speed: Double) {
         if (colorMap != null && minSpeed != null && maxSpeed != null) {
             mMap.addPolyline(PolylineOptions().add(curLatLng, prevLatLng).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speed, minSpeed!!, maxSpeed!!)))
+        }
+    }
+
+    private fun restoreMap(intent: Intent) {
+        var sessionId = intent.getLongExtra(C.CURRENT_SESSION_ID, Long.MIN_VALUE)
+        if (sessionId != Long.MIN_VALUE) {
+            val repo = Repository(this).open()
+            val locations = repo.getLocationsForGivenSession(sessionId)
+
+            var i = 0
+            var prevLoc : LatLng? = null
+            while (i < locations.size) {
+                val loc = locations[i]
+                val curLatLng = LatLng(loc.latitude, loc.longitude)
+
+                if (loc.type == C.LOCAL_LOCATION_TYPE_CP) {
+                    drawCheckpoint(curLatLng)
+
+                } else if (loc.type == C.LOCAL_LOCATION_TYPE_LOC){
+                    var speedSecPerKm : Double = 0.toDouble()
+                    if (loc.speed != null) {
+                        speedSecPerKm = loc.speed!!.times(60)
+                    }
+
+                    if (colorMap != null && minSpeed != null && maxSpeed != null && prevLoc != null) {
+                        mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc).width(10f).color(Helpers.getColorForSpeed(colorMap!!, speedSecPerKm, minSpeed!!, maxSpeed!!)))
+                    }
+                    prevLoc = curLatLng
+                }
+
+                i += 1
+            }
         }
     }
 
@@ -615,25 +637,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     if (!intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN).isNaN() &&
                         !intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN).isNaN()) {
 
-                        handleNewCheckpoint(LatLng(intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN)))
+                        drawCheckpoint(LatLng(intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN)))
                     }
 
                     if (!mapUpdated) {
                         mapUpdated = true
-                        var i = 0
-                        while (true) {
-                            val lat = intent.getDoubleExtra(C.RESTORE_CPS_LATITUDE + i.toString(), Double.NaN)
-                            val lng = intent.getDoubleExtra(C.RESTORE_CPS_LONGITUDE + i.toString(), Double.NaN)
-                            Log.d(TAG, "MAP UPDATED lat " + lat)
-                            Log.d(TAG, "MAP UPDATED lng " + lng)
 
-                            if (!lat.isNaN() && !lng.isNaN()) {
-                                handleNewCheckpoint(LatLng(lat, lng))
-                            } else {
-                                break
-                            }
-                            i++
-                        }
+                        restoreMap(intent)
+
                         trackingSet = true
                         dealWithTracking()
                     }

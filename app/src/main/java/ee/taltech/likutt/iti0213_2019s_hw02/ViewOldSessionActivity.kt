@@ -76,7 +76,7 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         var i = 0
         var prevLoc : LatLng? = null
         while (i < locations.size) {
-            var loc = locations[i]
+            val loc = locations[i]
 
             val curLatLng = LatLng(loc.latitude, loc.longitude)
 
