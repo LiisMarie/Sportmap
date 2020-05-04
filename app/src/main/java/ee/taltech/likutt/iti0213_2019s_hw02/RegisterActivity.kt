@@ -61,8 +61,15 @@ class RegisterActivity : AppCompatActivity() {
 
                     Log.d(TAG, "TOKEN " + response.getString("token"))  // küsitav väli
 
-                    // todo save account info to local database
-                    // todo show map view
+                    val repo = Repository(this).open()
+                    repo.deleteUser()
+                    repo.addUser(email, password, firstName, lastName)
+                    repo.close()
+
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                    startActivity(intent)
+                    finish()
 
                 },  // kõik läks hästi, võtab tulemused vastu
                 Response.ErrorListener { error ->

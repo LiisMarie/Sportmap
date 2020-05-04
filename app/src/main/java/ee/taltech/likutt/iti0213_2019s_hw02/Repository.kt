@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import androidx.core.database.getDoubleOrNull
+import android.provider.ContactsContract
 
 class Repository(val context: Context) {
     private lateinit var dbHelper: DatabaseHelper
@@ -55,6 +55,16 @@ class Repository(val context: Context) {
         contentValues.put(DatabaseHelper.LOCATION_RECORDED_AT, recordedAt)
 
         db.insert(DatabaseHelper.LOCATION_TABLE_NAME, null, contentValues)
+    }
+
+    fun addUser(email: String, password: String, firstName: String, lastName: String) {
+        var contentValues = ContentValues()
+        contentValues.put(DatabaseHelper.ACCOUNT_ID, 0)
+        contentValues.put(DatabaseHelper.ACCOUNT_EMAIL, email)
+        contentValues.put(DatabaseHelper.ACCOUNT_PASSWORD, password)
+        contentValues.put(DatabaseHelper.ACCOUNT_FIRST_NAME, firstName)
+        contentValues.put(DatabaseHelper.ACCOUNT_LAST_NAME, lastName)
+        db.insert(DatabaseHelper.ACCOUNT_TABLE_NAME, null, contentValues)
     }
 
 
@@ -174,6 +184,41 @@ class Repository(val context: Context) {
         return trackingLocations;
     }
 
+    fun fetchUser() : Cursor {
+        val columns = arrayOf(
+                DatabaseHelper.ACCOUNT_ID,
+                DatabaseHelper.ACCOUNT_EMAIL,
+                DatabaseHelper.ACCOUNT_PASSWORD,
+                DatabaseHelper.ACCOUNT_FIRST_NAME,
+                DatabaseHelper.ACCOUNT_LAST_NAME
+        )
+
+        val cursor = db.query(
+                DatabaseHelper.ACCOUNT_TABLE_NAME,
+                columns,
+                null,
+                null,
+                null,
+                null,
+                null
+        )
+
+        return cursor
+    }
+
+    fun getUser() : User? {
+        val cursor = fetchUser()
+        while (cursor.moveToNext()){
+            return User(
+                    cursor.getString(cursor.getColumnIndex(DatabaseHelper.ACCOUNT_EMAIL)),
+                    cursor.getString(cursor.getColumnIndex(DatabaseHelper.ACCOUNT_PASSWORD)),
+                    cursor.getString(cursor.getColumnIndex(DatabaseHelper.ACCOUNT_FIRST_NAME)),
+                    cursor.getString(cursor.getColumnIndex(DatabaseHelper.ACCOUNT_LAST_NAME))
+            )
+        }
+        return null;
+    }
+
 
     // update
 
@@ -203,5 +248,11 @@ class Repository(val context: Context) {
         val where2 = "${DatabaseHelper.LOCATION_SESSION_ID}='$id'"
         db.delete(DatabaseHelper.LOCATION_TABLE_NAME, where2, null)
 
+    }
+
+    fun deleteUser() {
+        // LOGGED IN USER ID IS ALWAYS 0
+        val where = "${DatabaseHelper.ACCOUNT_ID}='0'"
+        db.delete(DatabaseHelper.ACCOUNT_TABLE_NAME, where, null)
     }
 }

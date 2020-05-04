@@ -21,6 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".LoginActivity"/>
+        <activity android:name=".AccountActivity" />
+        <activity android:name=".MainActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".RenameOldSessionActivity" />
         <activity android:name=".ViewOldSessionActivity" />
@@ -39,7 +41,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".FirstActivity"
             android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

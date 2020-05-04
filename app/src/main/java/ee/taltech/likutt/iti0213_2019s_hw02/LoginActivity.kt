@@ -59,8 +59,21 @@ class LoginActivity : AppCompatActivity() {
                     Log.d(TAG, response.toString())
 
                     Log.d(TAG, "TOKEN  " + response.getString("token"))
-                    // todo login in save accoount info locally
-                    // todo show map
+
+                    val repo = Repository(this).open()
+                    Log.d(TAG, "LOGIN " + " repo opened")
+                    repo.deleteUser()
+                    Log.d(TAG, "LOGIN " + " user deleted")
+                    repo.addUser(email, password, "", "")
+                    Log.d(TAG, "LOGIN " + " add user")
+                    repo.close()
+                    Log.d(TAG, "LOGIN " + " close repo")
+
+
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                    startActivity(intent)
+                    finish()
                 },
                 Response.ErrorListener { error ->
                     Log.d(TAG, error.toString())

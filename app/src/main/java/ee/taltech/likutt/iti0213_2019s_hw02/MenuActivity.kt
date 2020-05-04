@@ -24,7 +24,10 @@ class MenuActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    fun openProfileView(view: View) {}
+    fun openProfileView(view: View) {
+        val intent = Intent(this, AccountActivity::class.java)
+        startActivity(intent)
+    }
 
     fun openSettingsView(view: View) {}
 }

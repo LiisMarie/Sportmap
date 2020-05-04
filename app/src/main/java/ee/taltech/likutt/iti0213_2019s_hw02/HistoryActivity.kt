@@ -29,7 +29,9 @@ class HistoryActivity : AppCompatActivity() {
 
     fun openMenu(view: View) {
         val intent = Intent(this, MenuActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
         startActivity(intent)
+        finish()
     }
 
 }

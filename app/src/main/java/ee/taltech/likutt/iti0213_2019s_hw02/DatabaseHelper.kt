@@ -11,6 +11,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
         const val SESSION_TABLE_NAME = "SESSIONS"
         const val LOCATION_TABLE_NAME = "LOCATIONS"
+        const val ACCOUNT_TABLE_NAME = "ACCOUNT"
 
         const val SESSION_ID = "_id"
         const val SESSION_NAME = "name"
@@ -29,6 +30,13 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val LOCATION_SESSION_ID = "sessionId"
         const val LOCATION_TYPE = "type"  // LOC or CP
         const val LOCATION_SPEED = "speed"  // speed from previous location to current one
+
+        const val ACCOUNT_ID = "_id"
+        const val ACCOUNT_EMAIL = "email"
+        const val ACCOUNT_PASSWORD = "password"
+        const val ACCOUNT_FIRST_NAME = "firstName"
+        const val ACCOUNT_LAST_NAME = "lastName"
+
 
         const val SQL_SESSION_CREATE_TABLE =
                 "create table if not exists $SESSION_TABLE_NAME(" +
@@ -55,16 +63,28 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         "$LOCATION_SPEED REAL" +
                         ");"
         const val SQL_DELETE_TABLE_LOCATION = "DROP TABLE IF EXISTS $LOCATION_TABLE_NAME"
+
+        const val SQL_ACCOUNT_CREATE_TABLE =
+                "create table if not exists $ACCOUNT_TABLE_NAME(" +
+                        "$ACCOUNT_ID INTEGER PRIMARY KEY, " +
+                        "$ACCOUNT_EMAIL TEXT NOT NULL, " +
+                        "$ACCOUNT_PASSWORD TEXT NOT NULL, " +
+                        "$ACCOUNT_FIRST_NAME TEXT NOT NULL, " +
+                        "$ACCOUNT_LAST_NAME TEXT NOT NULL" +
+                        ");"
+        const val SQL_DELETE_TABLE_ACCOUNT = "DROP TABLE IF EXISTS $ACCOUNT_TABLE_NAME"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(SQL_SESSION_CREATE_TABLE)
         db?.execSQL(SQL_LOCATION_CREATE_TABLE)
+        db?.execSQL(SQL_ACCOUNT_CREATE_TABLE)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL(SQL_DELETE_TABLE_SESSION)
         db?.execSQL(SQL_DELETE_TABLE_LOCATION)
+        db?.execSQL(SQL_DELETE_TABLE_ACCOUNT)
         onCreate(db)
     }
 
