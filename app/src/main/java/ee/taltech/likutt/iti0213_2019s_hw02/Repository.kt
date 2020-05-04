@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import android.provider.ContactsContract
 
 class Repository(val context: Context) {
     private lateinit var dbHelper: DatabaseHelper

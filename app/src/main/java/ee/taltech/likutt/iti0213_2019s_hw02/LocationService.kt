@@ -442,9 +442,12 @@ class LocationService : Service() {
         Log.d(TAG, "getRestToken")
         val handler = WebApiSingletonHandler.getInstance(applicationContext)
 
+        val user = repo.getUser() ?: return
+        // if no user has been saved then return
+
         val requestJsonParameters = JSONObject()
-        requestJsonParameters.put("email", C.REST_USERNAME)
-        requestJsonParameters.put("password", C.REST_PASSWORD)
+        requestJsonParameters.put("email", user.email)
+        requestJsonParameters.put("password", user.password)
 
         val httpRequest = JsonObjectRequest(
             Request.Method.POST,
