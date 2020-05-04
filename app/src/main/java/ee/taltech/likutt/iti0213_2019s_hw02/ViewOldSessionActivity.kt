@@ -58,6 +58,10 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
             textViewSpeed.text = session!!.speed
             textViewDuration.text = Helpers.getTimeString(session!!.duration)
         }
+
+        buttonSpeed.setOnClickListener {
+            // todo setting max / min speed for old session
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

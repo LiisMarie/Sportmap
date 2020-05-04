@@ -27,7 +27,6 @@ class SettingsActivity : AppCompatActivity() {
             Log.d(TAG, editTextMaxSpeed.text.toString())
             Log.d(TAG, editTextGpsUpdateFrequency.text.toString())
             Log.d(TAG, editTextSyncingInterval.text.toString())
-
         }
     }
 
