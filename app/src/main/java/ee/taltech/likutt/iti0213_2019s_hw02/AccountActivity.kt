@@ -26,7 +26,8 @@ class AccountActivity : AppCompatActivity() {
         val user = repo.getUser()
         if (user != null) {
             editTextEmail.setText(user.email)
-            // todo display name, last name too
+            editTextFirstName.setText(user.firstName)
+            editTextLastName.setText(user.lastName)
         }
 
         buttonLogOut.setOnClickListener {

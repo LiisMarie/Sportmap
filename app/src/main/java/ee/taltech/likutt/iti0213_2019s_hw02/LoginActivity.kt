@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
 
                     val repo = Repository(this).open()
                     repo.deleteUser()
-                    repo.addUser(email, password, "", "")  // todo add first and lastname too
+                    repo.addUser(email, password, response.getString("firstName"), response.getString("lastName"))  // todo add first and lastname too
 
                     val intent = Intent(this, AccountActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
