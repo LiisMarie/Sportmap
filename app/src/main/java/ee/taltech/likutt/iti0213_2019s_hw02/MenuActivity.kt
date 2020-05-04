@@ -37,5 +37,8 @@ class MenuActivity : AppCompatActivity() {
 
     }
 
-    fun openSettingsView(view: View) {}
+    fun openSettingsView(view: View) {
+        val intent = Intent(this, SettingsActivity::class.java)
+        startActivity(intent)
+    }
 }

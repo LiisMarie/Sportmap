@@ -64,7 +64,7 @@ class LocationService : Service() {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
-    private var minSpeed: Int = 6*60
+    private var minSpeed: Int = 6*60  // 1 km within 6 min  -- minspeed=6*60 km / per sec
     private var maxSpeed: Int = 18*60
 
     private var prevLocation: Location? = null
