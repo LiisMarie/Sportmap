@@ -51,7 +51,7 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         if (session == null) {
             openHistory()
         } else {
-            textViewSessionName.text = session!!.name
+            textViewMenu.text = session!!.name
             toolbar.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT
             toolbar.requestLayout()
             textViewDistance.text = String.format("%.2f", session!!.distance)

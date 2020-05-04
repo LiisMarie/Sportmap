@@ -8,7 +8,7 @@
     android:background="@drawable/roundedbutton">
 
     <TextView
-        android:id="@+id/textViewSessionName"
+        android:id="@+id/textViewMenu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -34,7 +34,7 @@
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewSessionName" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewMenu" />
 
     <TextView
         android:id="@+id/textViewRecordedAt"
@@ -148,7 +148,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textViewSessionDescription" />
 
     <Button
-        android:id="@+id/buttonLoad"
+        android:id="@+id/buttonRegister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -173,7 +173,7 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/buttonLoad"
+        app:layout_constraintStart_toEndOf="@+id/buttonRegister"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button

@@ -32,14 +32,14 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
     // nyyd see view jõudis ekraanile
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val session = oldSessions[position]  // annab positsiooni mis ekraanil lahti hetkel on
-        holder.itemView.textViewSessionName.text = session.name
+        holder.itemView.textViewMenu.text = session.name
         holder.itemView.textViewSessionDescription.text = session.description
         holder.itemView.textViewRecordedAt.text = session.recordedAt
         holder.itemView.textViewDistance.text = String.format("%.2f", session.distance)
         holder.itemView.textViewDuration.text = Helpers.getTimeString(session.duration)
         holder.itemView.textViewSpeed.text = session.speed
 
-        holder.itemView.buttonLoad.setOnClickListener {
+        holder.itemView.buttonRegister.setOnClickListener {
             var intent = Intent(context, ViewOldSessionActivity::class.java)
             intent.putExtra(C.OLD_SESSION_ID, session.id)
             context.startActivity(intent)
