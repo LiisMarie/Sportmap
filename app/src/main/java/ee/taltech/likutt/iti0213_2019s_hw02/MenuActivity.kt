@@ -25,8 +25,16 @@ class MenuActivity : AppCompatActivity() {
     }
 
     fun openProfileView(view: View) {
-        val intent = Intent(this, AccountActivity::class.java)
-        startActivity(intent)
+        val repo = Repository(this).open()
+        val user = repo.getUser()
+        if (user != null) {  // if user is logged in then show contact data
+            val intent = Intent(this, AccountActivity::class.java)
+            startActivity(intent)
+        } else {  // user isnt logged in, display login view
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     fun openSettingsView(view: View) {}

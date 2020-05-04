@@ -24,8 +24,9 @@ class AccountActivity : AppCompatActivity() {
             repo.deleteUser()
 
             val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
             startActivity(intent)
-            finishAffinity()  // closes all previous views
+            finish()
         }
     }
 

@@ -61,16 +61,10 @@ class LoginActivity : AppCompatActivity() {
                     Log.d(TAG, "TOKEN  " + response.getString("token"))
 
                     val repo = Repository(this).open()
-                    Log.d(TAG, "LOGIN " + " repo opened")
                     repo.deleteUser()
-                    Log.d(TAG, "LOGIN " + " user deleted")
                     repo.addUser(email, password, "", "")
-                    Log.d(TAG, "LOGIN " + " add user")
-                    repo.close()
-                    Log.d(TAG, "LOGIN " + " close repo")
 
-
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, AccountActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
                     startActivity(intent)
                     finish()
@@ -82,6 +76,13 @@ class LoginActivity : AppCompatActivity() {
         )
 
         handler.addToRequestQueue(httpRequest)
+    }
+
+    fun openMenu(view: View) {
+        val intent = Intent(this, MenuActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+        startActivity(intent)
+        finish()
     }
 
     fun Fragment.hideKeyboard() {

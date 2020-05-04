@@ -64,9 +64,8 @@ class RegisterActivity : AppCompatActivity() {
                     val repo = Repository(this).open()
                     repo.deleteUser()
                     repo.addUser(email, password, firstName, lastName)
-                    repo.close()
 
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, AccountActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
                     startActivity(intent)
                     finish()
@@ -79,6 +78,13 @@ class RegisterActivity : AppCompatActivity() {
         )
 
         handler.addToRequestQueue(httpRequest)
+    }
+
+    fun openMenu(view: View) {
+        val intent = Intent(this, MenuActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+        startActivity(intent)
+        finish()
     }
 
     fun Fragment.hideKeyboard() {
