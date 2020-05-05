@@ -42,7 +42,7 @@
         app:srcCompat="@drawable/baseline_arrow_back_24" />
 
     <TextView
-        android:id="@+id/textViewMenu"
+        android:id="@+id/textViewHeader"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"

@@ -51,8 +51,8 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         if (session == null) {
             openHistory()
         } else {
-            textViewMenu.text = session!!.name
-            toolbar.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT
+            textViewHeader.text = session!!.name
+            toolbar.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
             toolbar.requestLayout()
             textViewDistance.text = String.format("%.2f", session!!.distance)
             textViewSpeed.text = session!!.speed
@@ -60,7 +60,13 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         buttonSpeed.setOnClickListener {
-            // todo setting max / min speed for old session
+            val intent = Intent(this, OldSessionSettingsActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if (session != null) {
+                intent.putExtra(C.OLD_SESSION_ID, session!!.id)
+            }
+            startActivity(intent)
+            finish()
         }
     }
 
@@ -75,7 +81,7 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun displayTrack() {
+    private fun displayTrack() {
         Log.d(TAG, "displayTrack")
         val locations = repo.getLocationsForGivenSession(session!!.id)
         val colorMap = Helpers.generateColorsForSpeeds(session!!.minSpeed, session!!.maxSpeed)
@@ -87,22 +93,26 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
 
             val curLatLng = LatLng(loc.latitude, loc.longitude)
 
-            if (loc.type == C.LOCAL_LOCATION_TYPE_START) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLatLng, 17f))  // zooms in on start location
-                drawStart(curLatLng)
-                prevLoc = curLatLng
+            when (loc.type) {
+                C.LOCAL_LOCATION_TYPE_START -> {
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLatLng, 17f))  // zooms in on start location
+                    drawStart(curLatLng)
+                    prevLoc = curLatLng
 
-            } else if (loc.type == C.LOCAL_LOCATION_TYPE_CP) {
-                drawCheckpoint(curLatLng)
-
-            } else if (loc.type == C.LOCAL_LOCATION_TYPE_LOC){
-                var speedSecPerKm : Double = 0.toDouble()
-                if (loc.speed != null) {
-                    speedSecPerKm = loc.speed!!.times(60)
                 }
+                C.LOCAL_LOCATION_TYPE_CP -> {
+                    drawCheckpoint(curLatLng)
 
-                mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc!!).width(10f).color(Helpers.getColorForSpeed(colorMap, speedSecPerKm, session!!.minSpeed, session!!.maxSpeed)))
-                prevLoc = curLatLng
+                }
+                C.LOCAL_LOCATION_TYPE_LOC -> {
+                    var speedSecPerKm : Double = 0.toDouble()
+                    if (loc.speed != null) {
+                        speedSecPerKm = loc.speed!!.times(60)
+                    }
+
+                    mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc!!).width(10f).color(Helpers.getColorForSpeed(colorMap, speedSecPerKm, session!!.minSpeed, session!!.maxSpeed)))
+                    prevLoc = curLatLng
+                }
             }
 
             i += 1
@@ -135,7 +145,7 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun openHistory() {
         val intent = Intent(this, HistoryActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
         finish()
     }

@@ -3,7 +3,6 @@ package ee.taltech.likutt.iti0213_2019s_hw02
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_settings.*
@@ -45,6 +44,7 @@ class SettingsActivity : AppCompatActivity() {
             editTextGpsUpdateFrequency.setText((settings.gpsUpdateFrequency / 1000).toString())
             editTextSyncingInterval.setText((settings.syncingInterval / 1000).toString())
         }
+
         // TODO...... display current settings
         //  you can change syncing interval in options (ala when received, once in 10 sec, once in 30, sec, etc..).
         //  It is possible to change gps update frequency
@@ -62,7 +62,6 @@ class SettingsActivity : AppCompatActivity() {
 
                 if (Helpers.validateSpeedInput(minSpeed, maxSpeed)) {
 
-                    // todo save in backend for active session
                     repo.deleteSettings()
                     repo.addSettings(minSpeed, maxSpeed, 2000, 2000)
 

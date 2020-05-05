@@ -598,9 +598,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         mMap.clear()
         val sessionId = intent.getLongExtra(C.CURRENT_SESSION_ID, Long.MIN_VALUE)
         if (sessionId != Long.MIN_VALUE) {
-            val repo = Repository(this).open()
+            if (minSpeed != null && maxSpeed != null) {
+                repo.updateSessionMinMaxSpeed(sessionId, minSpeed!!, maxSpeed!!)
+            }
+            
             val locations = repo.getLocationsForGivenSession(sessionId)
-
             var i = 0
             var prevLoc : LatLng? = null
             while (i < locations.size) {

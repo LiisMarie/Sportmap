@@ -32,7 +32,7 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
     // nyyd see view jõudis ekraanile
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val session = oldSessions[position]  // annab positsiooni mis ekraanil lahti hetkel on
-        holder.itemView.textViewMenu.text = session.name
+        holder.itemView.textViewHeader.text = session.name
         holder.itemView.textViewSessionDescription.text = session.description
         holder.itemView.textViewRecordedAt.text = session.recordedAt
         holder.itemView.textViewDistance.text = String.format("%.2f", session.distance)
@@ -40,13 +40,13 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         holder.itemView.textViewSpeed.text = session.speed
 
         holder.itemView.buttonRegister.setOnClickListener {
-            var intent = Intent(context, ViewOldSessionActivity::class.java)
+            val intent = Intent(context, ViewOldSessionActivity::class.java)
             intent.putExtra(C.OLD_SESSION_ID, session.id)
             context.startActivity(intent)
         }
 
         holder.itemView.buttonEdit.setOnClickListener {
-            var intent = Intent(context, RenameOldSessionActivity::class.java)
+            val intent = Intent(context, RenameOldSessionActivity::class.java)
             intent.putExtra(C.OLD_SESSION_ID, session.id)
             context.startActivity(intent)
         }
@@ -70,9 +70,9 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                         val repo = Repository(context).open()
                         repo.deleteSessionWithItsLocations(sessionId)
 
-                        var intent = Intent(context, HistoryActivity::class.java)
+                        val intent = Intent(context, HistoryActivity::class.java)
 
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                         context.startActivity(intent)
                         (context as Activity).finish()
                     }

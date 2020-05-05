@@ -283,6 +283,14 @@ class Repository(val context: Context) {
         db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
     }
 
+    fun updateSessionMinMaxSpeed(id: Long, minSpeed: Double, maxSpeed: Double) {
+        val contentValues = ContentValues()
+        contentValues.put(DatabaseHelper.SESSION_MIN_SPEED, minSpeed)
+        contentValues.put(DatabaseHelper.SESSION_MAX_SPEED, maxSpeed)
+        val where = "${DatabaseHelper.SESSION_ID}='$id'"
+        db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
+    }
+
 
     // delete
 
