@@ -39,7 +39,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.track_control.*
 import java.lang.Math.toDegrees
-import java.util.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
@@ -274,7 +273,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun makeCompassVisible() {
         compassSet = true
-        imageButton.setImageResource(R.drawable.baseline_explore_white_24)
+        imageButtonBack.setImageResource(R.drawable.baseline_explore_white_24)
         sensorManager.registerListener(this, accelerometer, SENSOR_DELAY_GAME)
         sensorManager.registerListener(this, magnetometer, SENSOR_DELAY_GAME)
         includeCompass.visibility = View.VISIBLE
@@ -282,7 +281,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun makeCompassInvisible() {
         compassSet = false
-        imageButton.setImageResource(R.drawable.baseline_explore_off_white_24)
+        imageButtonBack.setImageResource(R.drawable.baseline_explore_off_white_24)
         sensorManager.unregisterListener(this, accelerometer)
         sensorManager.unregisterListener(this, magnetometer)
         includeCompass.visibility = View.INVISIBLE
@@ -485,6 +484,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     fun buttonMenuOnClick(view: View) {
         Log.d(TAG, "buttonMenuOnClick")
         val intent = Intent(this, MenuActivity::class.java)
+        startActivity(intent)
+    }
+
+    fun buttonSettingsOnClick(view: View) {
+        Log.d(TAG, "buttonSettingsOnClick")
+        val intent = Intent(this, SettingsActivity::class.java)
+        intent.putExtra(C.FROM_WHERE_TO_SETTINGS, "MAP")
         startActivity(intent)
     }
 
@@ -726,5 +732,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             output[i] = output[i] + alpha * (input[i] - output[i])
         }
     }
+
+
 
 }

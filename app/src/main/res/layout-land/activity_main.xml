@@ -13,8 +13,8 @@
         layout="@layout/activity_maps"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        tools:layout_editor_absoluteX="-16dp"
+        tools:layout_editor_absoluteY="26dp" />
 
     <include
         android:id="@+id/includeCompass"
@@ -59,7 +59,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/imageButtonBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -79,7 +79,7 @@
         android:onClick="buttonMenuOnClick"
         android:src="@drawable/round_menu_white_24"
         app:layout_constraintBottom_toBottomOf="@+id/buttonCentered"
-        app:layout_constraintStart_toEndOf="@+id/imageButton"
+        app:layout_constraintStart_toEndOf="@+id/imageButtonBack"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/round_menu_white_24" />
 
@@ -96,5 +96,17 @@
         app:backgroundTint="@color/colorControlButton"
         app:layout_constraintStart_toEndOf="@+id/buttonDirection"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/imageButtonSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:backgroundTint="@color/colorControlButton"
+        android:onClick="buttonSettingsOnClick"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonMenu"
+        app:layout_constraintStart_toEndOf="@+id/buttonMenu"
+        app:layout_constraintTop_toTopOf="@+id/buttonMenu"
+        app:srcCompat="@drawable/baseline_settings_white_24" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,6 +39,7 @@ class MenuActivity : AppCompatActivity() {
 
     fun openSettingsView(view: View) {
         val intent = Intent(this, SettingsActivity::class.java)
+        intent.putExtra(C.FROM_WHERE_TO_SETTINGS, "MENU")
         startActivity(intent)
     }
 }

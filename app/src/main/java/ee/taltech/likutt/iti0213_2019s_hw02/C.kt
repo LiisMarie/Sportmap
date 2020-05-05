@@ -41,8 +41,9 @@ class C {
         val RESTORE_MAP_DIRECTION = "ee.taltech.likutt.restore.map_direction"
         val RESTORE_LOCATION_SERVICE_ACTIVE = "ee.taltech.likutt.restore.location_service_active"
 
-
         val OLD_SESSION_ID = "ee.taltech.likutt.old_session_id"
+
+        val FROM_WHERE_TO_SETTINGS = "ee.taltech.likutt.from_where_to_settings"
 
         const val LOCAL_LOCATION_TYPE_START = "start"
         const val LOCAL_LOCATION_TYPE_LOC = "loc"
@@ -50,8 +51,6 @@ class C {
         const val LOCAL_LOCATION_TYPE_WP = "wp"
 
         const val REST_BASE_URL = "https://sportmap.akaver.com/api/v1/"
-        const val REST_USERNAME = "test1@example.com"
-        const val REST_PASSWORD = "TestPassword1!"
 
         const val REST_LOCATIONID_LOC = "00000000-0000-0000-0000-000000000001"
         const val REST_LOCATIONID_WP = "00000000-0000-0000-0000-000000000002"

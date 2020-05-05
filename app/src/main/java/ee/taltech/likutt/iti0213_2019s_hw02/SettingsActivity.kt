@@ -17,6 +17,25 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
+        var fromWhere = intent.getStringExtra(C.FROM_WHERE_TO_SETTINGS)
+        if (fromWhere == null) {
+            fromWhere = "HOME"
+        }
+
+        imageButtonBack.setOnClickListener {
+            if (fromWhere == "MAP") {
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                finish()
+            } else {
+                val intent = Intent(this, MenuActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+                finish()
+            }
+        }
+
         val repo = Repository(this).open()
         val settings = repo.getSettings()
 
@@ -49,11 +68,11 @@ class SettingsActivity : AppCompatActivity() {
 
                     Toast.makeText(this, "Settings updated", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
-                    finish()
-
+                    if (fromWhere == "MAP") {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finishAffinity()  // closes all previous views
+                    }
 
                     /*
                     todo in the future
@@ -83,10 +102,4 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    fun openMenu(view: View) {
-        val intent = Intent(this, MenuActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(intent)
-        finish()
-    }
 }
