@@ -41,8 +41,11 @@ class AccountActivity : AppCompatActivity() {
 
         buttonUpdateData.setOnClickListener {
             if (editTextFirstName.text.toString() != "" && editTextLastName.text.toString() != "" && editTextEmail.text.toString() != "" && editTextPassword.text.toString() != "") {
-                createUser(editTextFirstName.text.toString(), editTextLastName.text.toString(), editTextEmail.text.toString(), editTextPassword.text.toString())
-            } else {
+                if (editTextPassword.text.toString() == editTextRepeatPassword.text.toString()) {
+                    createUser(editTextFirstName.text.toString(), editTextLastName.text.toString(), editTextEmail.text.toString(), editTextPassword.text.toString())
+                } else {
+                    Toast.makeText(this, "Provided passwords don't match!", Toast.LENGTH_SHORT).show()
+                }            } else {
                 Toast.makeText(this, "Not all fields set!", Toast.LENGTH_SHORT).show()
             }
 

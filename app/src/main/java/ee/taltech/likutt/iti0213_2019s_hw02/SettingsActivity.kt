@@ -23,10 +23,10 @@ class SettingsActivity : AppCompatActivity() {
         //  setting speed for track segment coloring in ACTIVE session
 
         buttonUpdateSettings.setOnClickListener {
-            Log.d(TAG, editTextMinSpeed.text.toString())
-            Log.d(TAG, editTextMaxSpeed.text.toString())
-            Log.d(TAG, editTextGpsUpdateFrequency.text.toString())
-            Log.d(TAG, editTextSyncingInterval.text.toString())
+            Log.d(TAG, editTextMinSpeed.text.toString()) // x > 0
+            Log.d(TAG, editTextMaxSpeed.text.toString()) // x > min
+            Log.d(TAG, editTextGpsUpdateFrequency.text.toString()) // x > 0
+            Log.d(TAG, editTextSyncingInterval.text.toString())  // x > 0
         }
     }
 
