@@ -49,6 +49,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private lateinit var mMap: GoogleMap
 
+    private lateinit var repo: Repository
+
     private val broadcastReceiver = InnerBroadcastReceiver()
     private val broadcastReceiverIntentFilter: IntentFilter = IntentFilter()
 
@@ -67,8 +69,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     // for track segment coloring
     private var prevLatLng : LatLng? = null
 
-    private var minSpeed: Long? = null
-    private var maxSpeed: Long? = null
+    private var minSpeed: Double? = null
+    private var maxSpeed: Double? = null
 
     private var colorMap: Map<List<Double>, Int>? = null
 
@@ -121,11 +123,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         accelerometer = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
 
-        // todo make them user configurable
-        minSpeed = 6*60
-        maxSpeed = 18*60
+        repo = Repository(this).open()
+        var settings = repo.getSettings()
+        if (settings == null) {
+            repo.addSettings((6*60).toDouble(), (18*60).toDouble(), 2000, 2000)
+        }
+        settings = repo.getSettings()
+        minSpeed = settings!!.minSpeed
+        maxSpeed = settings.maxSpeed
         if (minSpeed != null && maxSpeed != null) {
-            // todo update colormap when speeds get changed
             colorMap = Helpers.generateColorsForSpeeds(minSpeed!!, maxSpeed!!)
         }
     }
@@ -161,6 +167,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         prevLatLng = null
         mapUpdated = false
+
+        val settings = repo.getSettings()
+        if (settings != null) {
+            minSpeed = settings.minSpeed
+            maxSpeed = settings.maxSpeed
+            colorMap = Helpers.generateColorsForSpeeds(minSpeed!!, maxSpeed!!)
+        }
     }
 
     override fun onPause() {
@@ -303,7 +316,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     C.NOTIFICATION_CHANNEL,
                 "Default channel",
                 NotificationManager.IMPORTANCE_LOW
-            );
+            )
             //.setShowBadge(false).setSound(null, null);
             channel.description = "Default channel"
 
@@ -340,15 +353,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 "Hey, i really need to access GPS!",
                 Snackbar.LENGTH_INDEFINITE
             )
-                .setAction("OK", View.OnClickListener {
+                .setAction("OK") {
                     // Request permission
                     ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                            this,
+                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                             C.REQUEST_PERMISSIONS_REQUEST_CODE
                     )
-                })
-                .show()
+                }
+                    .show()
         } else {
             Log.i(TAG, "Requesting permission")
             // Request permission. It's possible this can be auto answered if device policy
@@ -382,19 +395,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     "You denied GPS! What can I do?",
                     Snackbar.LENGTH_INDEFINITE
                 )
-                    .setAction("Settings", View.OnClickListener {
+                    .setAction("Settings") {
                         // Build intent that displays the App settings screen.
                         val intent = Intent()
                         intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                         val uri: Uri = Uri.fromParts(
-                            "package",
+                                "package",
                                 BuildConfig.APPLICATION_ID, null
                         )
                         intent.data = uri
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         startActivity(intent)
-                    })
-                    .show()
+                    }
+                        .show()
             }
         }
 
@@ -577,7 +590,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun restoreMap(intent: Intent) {
         mMap.clear()
-        var sessionId = intent.getLongExtra(C.CURRENT_SESSION_ID, Long.MIN_VALUE)
+        val sessionId = intent.getLongExtra(C.CURRENT_SESSION_ID, Long.MIN_VALUE)
         if (sessionId != Long.MIN_VALUE) {
             val repo = Repository(this).open()
             val locations = repo.getLocationsForGivenSession(sessionId)

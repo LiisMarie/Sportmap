@@ -7,8 +7,8 @@ class TrackingSession(var id: Long,
                       var duration: Long,
                       var speed: String,
                       var distance: Float,
-                      var minSpeed: Long,
-                      var maxSpeed: Long) {
+                      var minSpeed: Double,
+                      var maxSpeed: Double) {
 
     override fun toString(): String {
         return "id: $id, name: $name, description: $description, recordedAt: $recordedAt, " +

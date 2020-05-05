@@ -24,7 +24,7 @@ class Helpers {
             if (mapPolylineOptions == null) {
                 mapPolylineOptions = PolylineOptions()
             }
-            return mapPolylineOptions!!;
+            return mapPolylineOptions!!
         }
 
         fun clearMapPolylineOptions(){
@@ -36,20 +36,20 @@ class Helpers {
             getMapPolylineOptions().add(LatLng(lat, lon)).width(10f).color(color)
         }
 
-        fun generateColorsForSpeeds(minSpeed: Long, maxSpeed: Long): Map<List<Double>, Int> {
-            var speedColorMap = mutableMapOf<List<Double>, Int>()
-            val speedDifference : Double = (maxSpeed - minSpeed).toDouble()
+        fun generateColorsForSpeeds(minSpeed: Double, maxSpeed: Double): Map<List<Double>, Int> {
+            val speedColorMap = mutableMapOf<List<Double>, Int>()
+            val speedDifference : Double = (maxSpeed - minSpeed)
             val diff : Double = speedDifference / 255.toDouble()
-            var speedToChange : Double = minSpeed.toDouble()
+            var speedToChange : Double = minSpeed
             var i = 0
 
             while (speedToChange < maxSpeed) {
-                var speedList = mutableListOf<Double>()
+                val speedList = mutableListOf<Double>()
                 speedList.add(speedToChange)
 
                 var green : Int
                 var red : Int
-                if (speedToChange <= (minSpeed.toDouble() + speedDifference / 2)) {
+                if (speedToChange <= (minSpeed + speedDifference / 2)) {
                     red = ((speedToChange * 2) * 255.0).toInt()
                     green = 255
                 } else {
@@ -68,19 +68,14 @@ class Helpers {
             return speedColorMap
         }
 
-        fun getColorForSpeed(colorMap: Map<List<Double>, Int>, speed: Double, minSpeed: Long, maxSpeed: Long) : Int{
-            //Log.d("getColorForSpeed", colorMap.toString())
-            //Log.d("getColorForSpeed", "speed: $speed, minspeed: $minSpeed, maxspeed: $maxSpeed")
+        fun getColorForSpeed(colorMap: Map<List<Double>, Int>, speed: Double, minSpeed: Double, maxSpeed: Double) : Int{
             if (speed < minSpeed) {
-                //Log.d("getColorForSpeed", "speed < minSpeed")
                 return Color.rgb(0, 255, 0)
             } else if (speed > maxSpeed) {
-                //Log.d("getColorForSpeed", "speed > maxSpeed")
                 return Color.rgb(255, 0, 0)
             }
             for ((k, v) in colorMap) {
                 if (k[0] <= speed && k[1] > speed) {
-                    //Log.d("getColorForSpeed", k.toString() + " " + v)
                     return v
                 }
             }
@@ -104,10 +99,10 @@ class Helpers {
             //Log.d(TAG, millis.toString() + '-' + distance.toString())
             val speed = millis / 60.0 / distance
             if (speed > 99) return "--:--"
-            val minutes = (speed).toInt();
+            val minutes = (speed).toInt()
             val seconds = ((speed - minutes) * 60).toInt()
 
-            return minutes.toString() + ":" + (if (seconds < 10) "0" else "") + seconds.toString();
+            return minutes.toString() + ":" + (if (seconds < 10) "0" else "") + seconds.toString()
         }
 
         fun getSpeed(millis: Long, distance: Float): Double {
@@ -125,6 +120,13 @@ class Helpers {
             drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
             drawable.draw(canvas)
             return BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
+
+        fun validateSpeedInput(minSpeed: Double, maxSpeed: Double) : Boolean {
+            if (minSpeed > 0 && maxSpeed > minSpeed) {
+                return true
+            }
+            return false
         }
 
     }

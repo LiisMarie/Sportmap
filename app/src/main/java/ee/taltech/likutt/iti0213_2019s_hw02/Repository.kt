@@ -13,7 +13,7 @@ class Repository(val context: Context) {
         dbHelper = DatabaseHelper(context)
         db = dbHelper.writableDatabase
 
-        return this;
+        return this
     }
 
     fun close(){
@@ -23,8 +23,8 @@ class Repository(val context: Context) {
 
     // create
 
-    fun addSession(name: String, description: String?, recordedAt: String, duration: Long, speed: String, distance: Float, minSpeed: Int, maxSpeed: Int) : Long {
-        var contentValues = ContentValues()
+    fun addSession(name: String, description: String?, recordedAt: String, duration: Long, speed: String, distance: Float, minSpeed: Double, maxSpeed: Double) : Long {
+        val contentValues = ContentValues()
 
         contentValues.put(DatabaseHelper.SESSION_NAME, name)
         if (description != null) {
@@ -43,7 +43,7 @@ class Repository(val context: Context) {
     }
 
     fun addLocation(latitude: Double, longitude: Double, sessionId: Long, type: String, speed: Double?, recordedAt: String) {
-        var contentValues = ContentValues()
+        val contentValues = ContentValues()
         contentValues.put(DatabaseHelper.LOCATION_LATITUDE, latitude)
         contentValues.put(DatabaseHelper.LOCATION_LONGITUDE, longitude)
         contentValues.put(DatabaseHelper.LOCATION_SESSION_ID, sessionId)
@@ -57,13 +57,23 @@ class Repository(val context: Context) {
     }
 
     fun addUser(email: String, password: String, firstName: String, lastName: String) {
-        var contentValues = ContentValues()
+        val contentValues = ContentValues()
         contentValues.put(DatabaseHelper.ACCOUNT_ID, 0)
         contentValues.put(DatabaseHelper.ACCOUNT_EMAIL, email)
         contentValues.put(DatabaseHelper.ACCOUNT_PASSWORD, password)
         contentValues.put(DatabaseHelper.ACCOUNT_FIRST_NAME, firstName)
         contentValues.put(DatabaseHelper.ACCOUNT_LAST_NAME, lastName)
         db.insert(DatabaseHelper.ACCOUNT_TABLE_NAME, null, contentValues)
+    }
+
+    fun addSettings(minSpeed: Double, maxSpeed: Double, gpsUpdateFrequency: Long, syncingInterval: Long) {
+        val contentValues = ContentValues()
+        contentValues.put(DatabaseHelper.SETTINGS_ID, 0)
+        contentValues.put(DatabaseHelper.SETTINGS_MIN_SPEED, minSpeed)
+        contentValues.put(DatabaseHelper.SETTINGS_MAX_SPEED, maxSpeed)
+        contentValues.put(DatabaseHelper.SETTINGS_GPS_UPDATE_FREQUENCY, gpsUpdateFrequency)
+        contentValues.put(DatabaseHelper.SETTINGS_SYNCING_INTERVAL, syncingInterval)
+        db.insert(DatabaseHelper.SETTINGS_TABLE_NAME, null, contentValues)
     }
 
 
@@ -135,12 +145,12 @@ class Repository(val context: Context) {
                             cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SESSION_DURATION)),
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.SESSION_SPEED)),
                             cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.SESSION_DISTANCE)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SESSION_MIN_SPEED)),
-                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SESSION_MAX_SPEED))
+                            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MIN_SPEED)),
+                            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MAX_SPEED))
                     )
             )
         }
-        return trackingSessions;
+        return trackingSessions
     }
 
     fun getSessionById(id: Long) : TrackingSession? {
@@ -155,13 +165,13 @@ class Repository(val context: Context) {
                         cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SESSION_DURATION)),
                         cursor.getString(cursor.getColumnIndex(DatabaseHelper.SESSION_SPEED)),
                         cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.SESSION_DISTANCE)),
-                        cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SESSION_MIN_SPEED)),
-                        cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SESSION_MAX_SPEED))
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MIN_SPEED)),
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MAX_SPEED))
                 )
             }
 
         }
-        return null;
+        return null
     }
 
     fun getLocationsForGivenSession(sessionId: Long) : List<TrackingLocation>{
@@ -180,7 +190,7 @@ class Repository(val context: Context) {
                     )
             )
         }
-        return trackingLocations;
+        return trackingLocations
     }
 
     fun fetchUser() : Cursor {
@@ -215,14 +225,49 @@ class Repository(val context: Context) {
                     cursor.getString(cursor.getColumnIndex(DatabaseHelper.ACCOUNT_LAST_NAME))
             )
         }
-        return null;
+        return null
+    }
+
+    fun fetchSettings() : Cursor {
+        val columns = arrayOf(
+                DatabaseHelper.SETTINGS_ID,
+                DatabaseHelper.SETTINGS_MIN_SPEED,
+                DatabaseHelper.SETTINGS_MAX_SPEED,
+                DatabaseHelper.SETTINGS_GPS_UPDATE_FREQUENCY,
+                DatabaseHelper.SETTINGS_SYNCING_INTERVAL
+        )
+
+        val cursor = db.query(
+                DatabaseHelper.SETTINGS_TABLE_NAME,
+                columns,
+                null,
+                null,
+                null,
+                null,
+                null
+        )
+
+        return cursor
+    }
+
+    fun getSettings() : Settings? {
+        val cursor = fetchSettings()
+        while (cursor.moveToNext()){
+            return Settings(
+                    cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SETTINGS_MIN_SPEED)),
+                    cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SETTINGS_MAX_SPEED)),
+                    cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SETTINGS_GPS_UPDATE_FREQUENCY)),
+                    cursor.getLong(cursor.getColumnIndex(DatabaseHelper.SETTINGS_SYNCING_INTERVAL))
+            )
+        }
+        return null
     }
 
 
     // update
 
     fun updateSessionDurationSpeedDistance(id: Long, duration: Long, speed: String, distance: Float) {
-        var contentValues = ContentValues()
+        val contentValues = ContentValues()
         contentValues.put(DatabaseHelper.SESSION_DURATION, duration)
         contentValues.put(DatabaseHelper.SESSION_SPEED, speed)
         contentValues.put(DatabaseHelper.SESSION_DISTANCE, distance)
@@ -231,7 +276,7 @@ class Repository(val context: Context) {
     }
 
     fun updateSessionNameDescription(id: Long, name: String, description: String?) {
-        var contentValues = ContentValues()
+        val contentValues = ContentValues()
         contentValues.put(DatabaseHelper.SESSION_NAME, name)
         contentValues.put(DatabaseHelper.SESSION_DESCRIPTION, description)
         val where = "${DatabaseHelper.SESSION_ID}='$id'"
@@ -253,5 +298,11 @@ class Repository(val context: Context) {
         // LOGGED IN USER ID IS ALWAYS 0
         val where = "${DatabaseHelper.ACCOUNT_ID}='0'"
         db.delete(DatabaseHelper.ACCOUNT_TABLE_NAME, where, null)
+    }
+
+    fun deleteSettings() {
+        // ACTIVE SESSION SETTINGS ID IS ALWAYS 0
+        val where = "${DatabaseHelper.SETTINGS_ID}='0'"
+        db.delete(DatabaseHelper.SETTINGS_TABLE_NAME, where, null)
     }
 }

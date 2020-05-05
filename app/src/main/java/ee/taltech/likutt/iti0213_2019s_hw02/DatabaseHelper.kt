@@ -12,6 +12,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val SESSION_TABLE_NAME = "SESSIONS"
         const val LOCATION_TABLE_NAME = "LOCATIONS"
         const val ACCOUNT_TABLE_NAME = "ACCOUNT"
+        const val SETTINGS_TABLE_NAME = "SETTINGS"
 
         const val SESSION_ID = "_id"
         const val SESSION_NAME = "name"
@@ -36,6 +37,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val ACCOUNT_PASSWORD = "password"
         const val ACCOUNT_FIRST_NAME = "firstName"
         const val ACCOUNT_LAST_NAME = "lastName"
+
+        const val SETTINGS_ID = "_id"
+        const val SETTINGS_MIN_SPEED = "minSpeed"
+        const val SETTINGS_MAX_SPEED = "maxSpeed"
+        const val SETTINGS_GPS_UPDATE_FREQUENCY = "gpsUpdateFrequency"
+        const val SETTINGS_SYNCING_INTERVAL = "syncingInterval"
 
 
         const val SQL_SESSION_CREATE_TABLE =
@@ -73,18 +80,30 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         "$ACCOUNT_LAST_NAME TEXT NOT NULL" +
                         ");"
         const val SQL_DELETE_TABLE_ACCOUNT = "DROP TABLE IF EXISTS $ACCOUNT_TABLE_NAME"
+
+        const val SQL_SETTINGS_CREATE_TABLE =
+                "create table if not exists $SETTINGS_TABLE_NAME(" +
+                        "$SETTINGS_ID INTEGER PRIMARY KEY, " +
+                        "$SETTINGS_MIN_SPEED REAL NOT NULL, " +
+                        "$SETTINGS_MAX_SPEED REAL NOT NULL, " +
+                        "$SETTINGS_GPS_UPDATE_FREQUENCY INTEGER NOT NULL, " +
+                        "$SETTINGS_SYNCING_INTERVAL INTEGER NOT NULL" +
+                        ");"
+        const val SQL_DELETE_TABLE_SETTINGS = "DROP TABLE IF EXISTS $SETTINGS_TABLE_NAME"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(SQL_SESSION_CREATE_TABLE)
         db?.execSQL(SQL_LOCATION_CREATE_TABLE)
         db?.execSQL(SQL_ACCOUNT_CREATE_TABLE)
+        db?.execSQL(SQL_SETTINGS_CREATE_TABLE)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL(SQL_DELETE_TABLE_SESSION)
         db?.execSQL(SQL_DELETE_TABLE_LOCATION)
         db?.execSQL(SQL_DELETE_TABLE_ACCOUNT)
+        db?.execSQL(SQL_DELETE_TABLE_SETTINGS)
         onCreate(db)
     }
 
