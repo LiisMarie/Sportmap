@@ -3,5 +3,89 @@
     <string name="title_activity_maps">Map</string>
     <string name="compass">Compass</string>
     <string name="initial_track_control_text"></string>
+    <string name="button_back_description">Back button</string>
+
+
+    <!-- activity_account -->
+    <string name="activity_account_header">Account</string>
+    <string name="activity_account_button_log_out">Log out</string>
+    <string name="activity_account_button_submit_changes">Submit changes</string>
+    <string name="activity_account_text_view_first_name">First name</string>
+    <string name="activity_account_text_view_last_name">Last name</string>
+    <string name="activity_account_text_view_email">Email</string>
+    <string name="activity_account_text_view_password">Password</string>
+    <string name="activity_account_text_view_repeat_password">Repeat password</string>
+
+    <!-- activity_history -->
+    <string name="activity_history_header">History</string>
+
+    <!-- activity_login -->
+    <string name="activity_login_header">Login</string>
+    <string name="activity_login_button_register">Register</string>
+    <string name="activity_login_button_login">Login</string>
+    <string name="activity_login_text_view_email">Email</string>
+    <string name="activity_login_text_view_password">Password</string>
+
+    <!-- activity_main -->
+
+
+    <!-- activity_menu -->
+    <string name="activity_menu_header">Menu</string>
+    <string name="activity_menu_button_history">History</string>
+    <string name="activity_menu_button_profile">Profile</string>
+    <string name="activity_menu_button_settings">Settings</string>
+
+    <!-- activity_old_session_settings -->
+    <string name="activity_old_session_settings_header">Settings</string>
+    <string name="activity_old_session_settings_text_view_set_speed">Set speed for session (km per minute)</string>
+    <string name="activity_old_session_settings_text_view_min_speed">MIN speed</string>
+    <string name="activity_old_session_settings_text_view_max_speed">MAX speed (x > min)</string>
+    <string name="activity_old_session_settings_button_update_speed">Update speed</string>
+
+    <!-- activity_register -->
+    <string name="activity_register_header">Register</string>
+    <string name="activity_register_button_login">Login</string>
+    <string name="activity_register_button_register">Register</string>
+    <string name="activity_register_text_view_first_name">First name</string>
+    <string name="activity_register_text_view_last_name">Last name</string>
+    <string name="activity_register_text_view_email">Email</string>
+    <string name="activity_register_text_view_password">Password</string>
+    <string name="activity_register_text_view_repeat_password">Repeat password</string>
+
+    <!-- activity_rename_old_session -->
+    <string name="activity_rename_old_session_header">Edit session</string>
+    <string name="activity_rename_old_session_text_view_session_name">Session name:</string>
+    <string name="activity_rename_old_session_text_view_session_description">Session description</string>
+    <string name="activity_rename_old_session_text_view_recorded_at">Recorded at:</string>
+    <string name="activity_rename_old_session_button_save_changes">Save changes</string>
+
+    <!-- activity_settings -->
+    <string name="activity_settings_header">Settings</string>
+    <string name="activity_settings_text_view_set_speed">Set speed for active session (km per minute)</string>
+    <string name="activity_settings_text_view_min_speed">MIN speed</string>
+    <string name="activity_settings_text_view_max_speed">MAX speed (x > min)</string>
+    <string name="activity_settings_text_view_gps_update_frequency">GPS update frequency</string>
+    <string name="activity_settings_text_view_syncing_interval">Syncing interval (in seconds)</string>
+    <string name="activity_settings_button_update_settings">Update settings</string>
+
+    <!-- activity_view_old_session -->
+    <string name="activity_view_old_session_button_speed">Speed</string>
+
+    <!-- recycler_old_session -->
+    <string name="recycler_old_session_button_load">Load</string>
+    <string name="recycler_old_session_button_edit">Edit</string>
+    <string name="recycler_old_session_button_delete">Delete</string>
+    <string name="recycler_old_session_text_view_recorded_at">Recorded at:</string>
+
+
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+    <!--  -->
+
+
 
 </resources>

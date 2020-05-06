@@ -33,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:text="Settings"
+        android:text="@string/activity_old_session_settings_header"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Set speed for session (km per minute)"
+        android:text="@string/activity_old_session_settings_text_view_set_speed"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
@@ -57,7 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="MAX speed ( x > min)"
+        android:text="@string/activity_old_session_settings_text_view_max_speed"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="@+id/editTextMinSpeed"
         app:layout_constraintTop_toBottomOf="@+id/editTextMinSpeed" />
@@ -67,7 +67,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="MIN speed"
+        android:text="@string/activity_old_session_settings_text_view_min_speed"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="@+id/editTextMinSpeed"
         app:layout_constraintTop_toBottomOf="@+id/textView19" />
@@ -99,7 +99,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:background="@drawable/roundedbutton"
-        android:text="Update speed"
+        android:text="@string/activity_old_session_settings_button_update_speed"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextMaxSpeed" />

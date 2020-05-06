@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:text="Login"
+        android:text="@string/activity_login_header"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -70,7 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        android:text="Email"
+        android:text="@string/activity_login_text_view_email"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonRegister" />
@@ -80,7 +80,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Password"
+        android:text="@string/activity_login_text_view_password"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
@@ -92,7 +92,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/roundedbutton"
         android:hapticFeedbackEnabled="true"
-        android:text="REGISTER"
+        android:text="@string/activity_login_button_register"
         app:layout_constraintEnd_toEndOf="@+id/editTextEmail"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
@@ -103,7 +103,7 @@
         android:layout_marginTop="24dp"
         android:background="@drawable/roundedbutton"
         android:hapticFeedbackEnabled="true"
-        android:text="LOGIN"
+        android:text="@string/activity_login_button_login"
         app:layout_constraintEnd_toEndOf="@+id/editTextEmail"
         app:layout_constraintTop_toBottomOf="@+id/editTextPassword" />
 
