@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private var colorMap: Map<List<Double>, Int>? = null
 
-    // compass start  https://github.com/andreas-mausch/compass
+    // compass start https://github.com/andreas-mausch/compass
     private lateinit var sensorManager: SensorManager
     private lateinit var image: ImageView
     private lateinit var accelerometer: Sensor
