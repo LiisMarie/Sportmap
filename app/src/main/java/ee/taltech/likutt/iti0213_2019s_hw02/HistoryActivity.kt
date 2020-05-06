@@ -2,16 +2,12 @@ package ee.taltech.likutt.iti0213_2019s_hw02
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_history.*
 
 
 class HistoryActivity : AppCompatActivity() {
-    companion object {
-        private val TAG = this::class.java.declaringClass!!.simpleName
-    }
 
     private lateinit var repo: Repository
 
@@ -25,13 +21,17 @@ class HistoryActivity : AppCompatActivity() {
         recyclerViewOldSessions.layoutManager = LinearLayoutManager(this)
         // adapter - joonistab asja välja (tuleb ise luua)
         recyclerViewOldSessions.adapter = DataRecyclerViewAdapterSessions(this, repo.getAllSessions())
+
+        setOnClickListeners()
     }
 
-    fun openMenu(view: View) {
-        val intent = Intent(this, MenuActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
-        startActivity(intent)
-        finish()
+    private fun setOnClickListeners() {
+        imageButtonBack.setOnClickListener {
+            val intent = Intent(this, MenuActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
+        }
     }
 
 }

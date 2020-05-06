@@ -26,9 +26,20 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
+        setOnClickListeners()
+    }
+
+    private fun setOnClickListeners() {
+        imageButtonBack.setOnClickListener {
+            val intent = Intent(this, MenuActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
+        }
+
         buttonLogin.setOnClickListener {
-            var intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
         }
@@ -49,14 +60,14 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun createUser(firstName: String, lastName: String, email: String, password: String) {
         Log.d(TAG, "createUser")
-        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val handler = WebApiSingletonHandler.getInstance(applicationContext)
         val requestJsonParams = JSONObject()
         requestJsonParams.put("firstName", firstName)
         requestJsonParams.put("lastName", lastName)
         requestJsonParams.put("email", email)
         requestJsonParams.put("password", password)
 
-        var httpRequest = JsonObjectRequest(
+        val httpRequest = JsonObjectRequest(
                 Request.Method.POST,  // mis meetod
                 C.REST_BASE_URL + "account/register",  // kuhu kohta
                 requestJsonParams,  // body
@@ -70,7 +81,7 @@ class RegisterActivity : AppCompatActivity() {
                     repo.addUser(email, password, firstName, lastName)
 
                     val intent = Intent(this, AccountActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
 
@@ -82,13 +93,6 @@ class RegisterActivity : AppCompatActivity() {
         )
 
         handler.addToRequestQueue(httpRequest)
-    }
-
-    fun openMenu(view: View) {
-        val intent = Intent(this, MenuActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
-        startActivity(intent)
-        finish()
     }
 
     fun Fragment.hideKeyboard() {

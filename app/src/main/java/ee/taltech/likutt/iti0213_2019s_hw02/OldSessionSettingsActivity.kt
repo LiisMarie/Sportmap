@@ -7,9 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_old_session_settings.*
 
 class OldSessionSettingsActivity : AppCompatActivity() {
-    companion object {
-        private val TAG = this::class.java.declaringClass!!.simpleName
-    }
+
+    private lateinit var repo: Repository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,7 +19,7 @@ class OldSessionSettingsActivity : AppCompatActivity() {
             goToOldSessionView(sessionId)
         }
 
-        val repo = Repository(this).open()
+        repo = Repository(this).open()
         val session = repo.getSessionById(sessionId)
 
         if (session == null) {
@@ -29,6 +28,10 @@ class OldSessionSettingsActivity : AppCompatActivity() {
         editTextMinSpeed.setText((session!!.minSpeed / 60).toString())
         editTextMaxSpeed.setText((session.maxSpeed / 60).toString())
 
+        setOnClickListeners(sessionId)
+    }
+
+    private fun setOnClickListeners(sessionId: Long) {
         imageButtonBack.setOnClickListener {
             goToOldSessionView(sessionId)
         }

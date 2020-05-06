@@ -29,6 +29,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -112,12 +114,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         imageButtonCP.setOnClickListener {buttonCPOnClick()}
         imageButtonWP.setOnClickListener {buttonWPOnClick()}
 
-        buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+        buttonStartStop.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.colorStartButton))
 
         mapUpdated = true
 
         // compass
-        image = findViewById(R.id.imageViewCompass) as ImageView
+        image = findViewById(R.id.imageViewCompass)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
@@ -133,6 +135,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         if (minSpeed != null && maxSpeed != null) {
             colorMap = Helpers.generateColorsForSpeeds(minSpeed!!, maxSpeed!!)
         }
+
+        setOnClickListeners()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -233,7 +237,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         compassSet = savedInstanceState.getBoolean(C.RESTORE_COMPASS_SET, true)
         mapCentered = savedInstanceState.getBoolean(C.RESTORE_MAP_CENTERED_SET, true)
-        mapDirection = savedInstanceState.getString(C.RESTORE_MAP_DIRECTION, "North-up")
+        mapDirection = savedInstanceState.getString(C.RESTORE_MAP_DIRECTION, getString(R.string.activity_main_button_direction_text_north_up))
         locationServiceActive = savedInstanceState.getBoolean(C.RESTORE_LOCATION_SERVICE_ACTIVE, false)
 
         mapUpdated = false
@@ -253,8 +257,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         } else {
             startService(Intent(this, LocationService::class.java))
         }
-        buttonStartStop.text = "STOP"
-        buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStopButton))
+        buttonStartStop.text = getString(R.string.activity_main_button_startstop_text_stop)
+        buttonStartStop.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.colorStopButton))
+
 
         trackingSet = true
         locationServiceActive = !locationServiceActive
@@ -264,8 +269,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         // stopping the service
         stopService(Intent(this, LocationService::class.java))
 
-        buttonStartStop.text = "START"
-        buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+        buttonStartStop.text = getString(R.string.activity_main_button_startstop_text_start)
+        buttonStartStop.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.colorStartButton))
 
         trackingSet = false
         locationServiceActive = !locationServiceActive
@@ -288,12 +293,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     }
 
     private fun makeMapCentered() {
-        buttonCentered.text = "Centered"
+        buttonCentered.text = getString(R.string.activity_main_button_centered_text_centered)
         mapCentered = true
     }
 
     private fun makeMapNotCentered() {
-        buttonCentered.text = "Not centered"
+        buttonCentered.text = getString(R.string.activity_main_button_centered_text_not_centered)
         mapCentered = false
     }
 
@@ -381,32 +386,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     ) {
         Log.i(TAG, "onRequestPermissionResult")
         if (requestCode === C.REQUEST_PERMISSIONS_REQUEST_CODE) {
-            if (grantResults.count() <= 0) { // If user interaction was interrupted, the permission request is cancelled and you
-                // receive empty arrays.
-                Log.i(TAG, "User interaction was cancelled.")
-                Toast.makeText(this, "User interaction was cancelled.", Toast.LENGTH_SHORT).show()
-            } else if (grantResults[0] === PackageManager.PERMISSION_GRANTED) {// Permission was granted.
-                Log.i(TAG, "Permission was granted")
-                Toast.makeText(this, "Permission was granted", Toast.LENGTH_SHORT).show()
-            } else { // Permission denied.
-                Snackbar.make(
-                    findViewById(R.id.activity_main),
-                    "You denied GPS! What can I do?",
-                    Snackbar.LENGTH_INDEFINITE
-                )
-                    .setAction("Settings") {
-                        // Build intent that displays the App settings screen.
-                        val intent = Intent()
-                        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        val uri: Uri = Uri.fromParts(
-                                "package",
-                                BuildConfig.APPLICATION_ID, null
-                        )
-                        intent.data = uri
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(intent)
-                    }
-                        .show()
+            when {
+                grantResults.count() <= 0 -> { // If user interaction was interrupted, the permission request is cancelled and you
+                    // receive empty arrays.
+                    Log.i(TAG, "User interaction was cancelled.")
+                    Toast.makeText(this, "User interaction was cancelled.", Toast.LENGTH_SHORT).show()
+                }
+                grantResults[0] === PackageManager.PERMISSION_GRANTED -> {// Permission was granted.
+                    Log.i(TAG, "Permission was granted")
+                    Toast.makeText(this, "Permission was granted", Toast.LENGTH_SHORT).show()
+                }
+                else -> { // Permission denied.
+                    Snackbar.make(
+                            findViewById(R.id.activity_main),
+                            "You denied GPS! What can I do?",
+                            Snackbar.LENGTH_INDEFINITE
+                    )
+                            .setAction("Settings") {
+                                // Build intent that displays the App settings screen.
+                                val intent = Intent()
+                                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                val uri: Uri = Uri.fromParts(
+                                        "package",
+                                        BuildConfig.APPLICATION_ID, null
+                                )
+                                intent.data = uri
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                startActivity(intent)
+                            }
+                            .show()
+                }
             }
         }
 
@@ -415,7 +424,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
 
     // ============================================== CLICK HANDLERS =============================================
-    fun buttonStartStopOnClick(view: View) {
+
+    private fun setOnClickListeners() {
+        buttonStartStop.setOnClickListener {
+            buttonStartStopOnClick()
+        }
+        buttonCentered.setOnClickListener {
+            buttonCenteredOnClick()
+        }
+        buttonDirection.setOnClickListener {
+            buttonDirectionOnClick()
+        }
+        imageButtonBack.setOnClickListener {
+            buttonCompassOnClick()
+        }
+        buttonMenu.setOnClickListener {
+            buttonMenuOnClick()
+        }
+        imageButtonSettings.setOnClickListener {
+            buttonSettingsOnClick()
+        }
+    }
+
+    private fun buttonStartStopOnClick() {
         Log.d(TAG, "buttonStartStopOnClick. locationServiceActive: $locationServiceActive")
         // try to start/stop the background service
 
@@ -424,12 +455,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 .setTitle("Warning")
                 .setMessage("Do you want to stop tracking?")
                 .setIcon(R.drawable.twotone_warning_24)
-                .setPositiveButton("YES", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface?, whichButton: Int) {
-                        stopTracking()
-                    }
-                })
-                .setNegativeButton("NO", null).show()
+                .setPositiveButton("YES") { _, _ -> stopTracking() }
+                    .setNegativeButton("NO", null).show()
 
         } else {
             startTracking()
@@ -437,17 +464,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     }
 
-    fun buttonWPOnClick() {
+    private fun buttonWPOnClick() {
         Log.d(TAG, "buttonWPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_WP))
     }
 
-    fun buttonCPOnClick() {
+    private fun buttonCPOnClick() {
         Log.d(TAG, "buttonCPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_CP))
     }
 
-    fun buttonCenteredOnClick(view: View) {
+    private fun buttonCenteredOnClick() {
         Log.d(TAG, "buttonCenteredOnClick " + buttonCentered.text)
         if (!mapCentered) {
             makeMapCentered()
@@ -456,23 +483,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
     }
 
-    fun buttonDirectionOnClick(view: View) {
+    private fun buttonDirectionOnClick() {
         Log.d(TAG, "buttonDirectionOnClick " + buttonDirection.text)
         // todo logic
-        if (buttonDirection.text == "North-up") {
-            buttonDirection.text = "Direction up"
-            mapDirection = "Direction up"
-        } else if (buttonDirection.text == "Direction up") {
-            buttonDirection.text = "User chosen-up"
-            mapDirection = "User chosen-up"
-        } else {
-            buttonDirection.text = "North-up"
-            mapDirection = "North-up"
+        when (buttonDirection.text) {
+            getString(R.string.activity_main_button_direction_text_north_up) -> {
+                buttonDirection.text = getString(R.string.activity_main_button_direction_text_direction_up)
+                mapDirection = getString(R.string.activity_main_button_direction_text_direction_up)
+            }
+            getString(R.string.activity_main_button_direction_text_direction_up) -> {
+                buttonDirection.text = getString(R.string.activity_main_button_direction_text_user_chosen_up)
+                mapDirection = getString(R.string.activity_main_button_direction_text_user_chosen_up)
+            }
+            else -> {
+                buttonDirection.text = getString(R.string.activity_main_button_direction_text_north_up)
+                mapDirection = getString(R.string.activity_main_button_direction_text_north_up)
+            }
         }
 
     }
 
-    fun buttonCompassOnClick(view: View) {
+    private fun buttonCompassOnClick() {
         Log.d(TAG, "buttonCompassOnClick " + compassSet)
         if (compassSet) {
             makeCompassInvisible()
@@ -481,13 +512,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
     }
 
-    fun buttonMenuOnClick(view: View) {
+    private fun buttonMenuOnClick() {
         Log.d(TAG, "buttonMenuOnClick")
         val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
     }
 
-    fun buttonSettingsOnClick(view: View) {
+    private fun buttonSettingsOnClick() {
         Log.d(TAG, "buttonSettingsOnClick")
         val intent = Intent(this, SettingsActivity::class.java)
         intent.putExtra(C.FROM_WHERE_TO_SETTINGS, "MAP")
@@ -496,13 +527,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     fun dealWithTracking() {
         if (trackingSet) {
-            buttonStartStop.text = "STOP"
-            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStopButton))
+            buttonStartStop.text = getString(R.string.activity_main_button_startstop_text_stop)
+            buttonStartStop.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.colorStopButton))
 
             locationServiceActive = true
         } else {
-            buttonStartStop.text = "START"
-            buttonStartStop.setBackgroundColor(resources.getColor(R.color.colorStartButton))
+            buttonStartStop.text = getString(R.string.activity_main_button_startstop_text_start)
+            buttonStartStop.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.colorStartButton))
 
             locationServiceActive = false
         }
@@ -518,12 +549,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         else { makeMapNotCentered() }
 
         // todo logic behind this
-        if (mapDirection == "North-up") {
-            buttonDirection.text = "North-up"
-        } else if (mapDirection == "Direction up") {
-            buttonDirection.text = "Direction up"
-        } else if (mapDirection == "User chosen-up") {
-            buttonDirection.text = "User chosen-up"
+        when (mapDirection) {
+            getString(R.string.activity_main_button_direction_text_north_up) -> {
+                buttonDirection.text = getString(R.string.activity_main_button_direction_text_north_up)
+            }
+            getString(R.string.activity_main_button_direction_text_direction_up) -> {
+                buttonDirection.text = getString(R.string.activity_main_button_direction_text_direction_up)
+            }
+            getString(R.string.activity_main_button_direction_text_user_chosen_up) -> {
+                buttonDirection.text = getString(R.string.activity_main_button_direction_text_user_chosen_up)
+            }
         }
     }
 
@@ -567,24 +602,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     }
 
     private fun drawWaypoint(wpLatLng: LatLng) {
-        val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_flag_black_24)
+        val circleDrawable: Drawable = ResourcesCompat.getDrawable(resources, R.drawable.baseline_flag_black_24, null) ?: return
         val markerIcon: BitmapDescriptor = Helpers.getMarkerIconFromDrawable(circleDrawable)
         wpMarker = mMap.addMarker(
-            MarkerOptions()
-                .position(wpLatLng)
-                //.title("WP")
-                .icon(markerIcon)
+                MarkerOptions()
+                        .position(wpLatLng)
+                        //.title("WP")
+                        .icon(markerIcon)
         )
     }
 
     private fun drawCheckpoint(cpLatLng: LatLng) {
-        val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_beenhere_black_24)
+        val circleDrawable: Drawable = ResourcesCompat.getDrawable(resources, R.drawable.baseline_beenhere_black_24, null) ?: return
         val markerIcon: BitmapDescriptor = Helpers.getMarkerIconFromDrawable(circleDrawable)
         mMap.addMarker(
-            MarkerOptions()
-                .position(cpLatLng)
-                //.title("CP")
-                .icon(markerIcon)
+                MarkerOptions()
+                        .position(cpLatLng)
+                        //.title("CP")
+                        .icon(markerIcon)
         )
     }
 
@@ -636,7 +671,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             if (intent != null) {
                 Log.d(TAG, intent!!.action)
 
-                if (C.LOCATION_UPDATE_ACTION == intent!!.action){
+                if (C.LOCATION_UPDATE_ACTION == intent.action){
                     trackingSet = true
 
                     if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() &&
@@ -655,7 +690,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                 }
 
-                if (C.STATISTICS_UPDATE_ACTION == intent!!.action){
+                if (C.STATISTICS_UPDATE_ACTION == intent.action){
                     updateUI(intent)
 
                     if (!intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN).isNaN() &&

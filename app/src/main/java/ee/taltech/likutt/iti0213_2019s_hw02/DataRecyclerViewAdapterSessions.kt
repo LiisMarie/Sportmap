@@ -3,7 +3,6 @@ package ee.taltech.likutt.iti0213_2019s_hw02
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -60,23 +59,21 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     // session deletion
-    fun deleteSession(sessionId : Long) {
+    private fun deleteSession(sessionId : Long) {
         AlertDialog.Builder(context)
                 .setTitle("Warning")
                 .setMessage("Do you want to delete this session?")
                 .setIcon(R.drawable.twotone_warning_24)
-                .setPositiveButton("YES", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface?, whichButton: Int) {
-                        val repo = Repository(context).open()
-                        repo.deleteSessionWithItsLocations(sessionId)
+                .setPositiveButton("YES") { _, _ ->
+                    val repo = Repository(context).open()
+                    repo.deleteSessionWithItsLocations(sessionId)
 
-                        val intent = Intent(context, HistoryActivity::class.java)
+                    val intent = Intent(context, HistoryActivity::class.java)
 
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        context.startActivity(intent)
-                        (context as Activity).finish()
-                    }
-                })
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    context.startActivity(intent)
+                    (context as Activity).finish()
+                }
                 .setNegativeButton("NO", null).show()
     }
 }

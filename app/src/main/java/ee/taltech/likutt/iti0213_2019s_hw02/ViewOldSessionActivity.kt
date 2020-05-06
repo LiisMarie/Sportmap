@@ -4,9 +4,9 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -59,6 +59,10 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
             textViewDuration.text = Helpers.getTimeString(session!!.duration)
         }
 
+        setOnClickListeners()
+    }
+
+    private fun setOnClickListeners() {
         buttonSpeed.setOnClickListener {
             val intent = Intent(this, OldSessionSettingsActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -67,6 +71,9 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             startActivity(intent)
             finish()
+        }
+        imageButtonBack.setOnClickListener {
+            openHistory()
         }
     }
 
@@ -128,7 +135,7 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun drawCheckpoint(cpLatLng: LatLng) {
-        val circleDrawable: Drawable = resources.getDrawable(R.drawable.baseline_beenhere_black_24)
+        val circleDrawable: Drawable = ResourcesCompat.getDrawable(resources, R.drawable.baseline_beenhere_black_24, null) ?: return
         val markerIcon: BitmapDescriptor = Helpers.getMarkerIconFromDrawable(circleDrawable)
 
         mMap.addMarker(
@@ -137,10 +144,6 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
                         //.title("CP")
                         .icon(markerIcon)
         )
-    }
-
-    fun openHistoryView(view: View) {
-        openHistory()
     }
 
     private fun openHistory() {

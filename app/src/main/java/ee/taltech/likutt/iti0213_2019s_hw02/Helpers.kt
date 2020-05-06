@@ -4,36 +4,19 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.util.Log
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
 import java.util.concurrent.TimeUnit
-import kotlin.math.min
 
 class Helpers {
 
     companion object {
-        private val TAG = this::class.java.declaringClass!!.simpleName
 
         private var mapPolylineOptions: PolylineOptions? = null
 
-        @Synchronized
-        fun getMapPolylineOptions(): PolylineOptions {
-            if (mapPolylineOptions == null) {
-                mapPolylineOptions = PolylineOptions()
-            }
-            return mapPolylineOptions!!
-        }
-
         fun clearMapPolylineOptions(){
             mapPolylineOptions = PolylineOptions()
-        }
-
-        fun addToMapPolylineOptions(lat: Double, lon: Double, color: Int){
-            Log.d("addToMapPolylineOptions", color.toString())
-            getMapPolylineOptions().add(LatLng(lat, lon)).width(10f).color(color)
         }
 
         fun generateColorsForSpeeds(minSpeed: Double, maxSpeed: Double): Map<List<Double>, Int> {

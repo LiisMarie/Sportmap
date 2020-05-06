@@ -26,15 +26,18 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        setOnClickListeners()
+    }
+
+    private fun setOnClickListeners() {
         buttonRegister.setOnClickListener {
-            var intent = Intent(this, RegisterActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+            val intent = Intent(this, RegisterActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
         }
 
         buttonLogin.setOnClickListener {
-            Log.d("he", "log innn")
             if (editTextEmail.text.toString() != "" && editTextPassword.text.toString() != "") {
                 hideKeyboard()
                 loginUser(editTextEmail.text.toString(), editTextPassword.text.toString())
@@ -42,16 +45,23 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Not all fields set!", Toast.LENGTH_SHORT).show()
             }
         }
+
+        imageButtonBack.setOnClickListener {
+            val intent = Intent(this, MenuActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun loginUser(email: String, password: String) {
         Log.d(TAG, "loginUser")
-        var handler = WebApiSingletonHandler.getInstance(applicationContext)
+        val handler = WebApiSingletonHandler.getInstance(applicationContext)
         val requestJsonParams = JSONObject()
         requestJsonParams.put("email", email)
         requestJsonParams.put("password", password)
 
-        var httpRequest = JsonObjectRequest(
+        val httpRequest = JsonObjectRequest(
                 Request.Method.POST,
                 C.REST_BASE_URL + "account/login",
                 requestJsonParams,
@@ -62,10 +72,10 @@ class LoginActivity : AppCompatActivity() {
 
                     val repo = Repository(this).open()
                     repo.deleteUser()
-                    repo.addUser(email, password, response.getString("firstName"), response.getString("lastName"))  // todo add first and lastname too
+                    repo.addUser(email, password, response.getString("firstName"), response.getString("lastName"))
 
                     val intent = Intent(this, AccountActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
                 },
@@ -78,22 +88,15 @@ class LoginActivity : AppCompatActivity() {
         handler.addToRequestQueue(httpRequest)
     }
 
-    fun openMenu(view: View) {
-        val intent = Intent(this, MenuActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
-        startActivity(intent)
-        finish()
-    }
-
     fun Fragment.hideKeyboard() {
         view?.let { activity?.hideKeyboard(it)}
     }
 
-    fun Activity.hideKeyboard() {
+    private fun Activity.hideKeyboard() {
         hideKeyboard(currentFocus ?: View(this))
     }
 
-    fun Context.hideKeyboard(view: View) {
+    private fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }

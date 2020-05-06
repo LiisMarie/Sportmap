@@ -36,25 +36,32 @@ class RenameOldSessionActivity : AppCompatActivity() {
             editTextSessionName.setText(session!!.name)
             editTextSessionDescription.setText(session!!.description)
         }
+
+        setOnClickListeners()
     }
 
-    fun openHistoryView(view: View) {
-        openHistory()
+    private fun setOnClickListeners() {
+        imageButtonBack.setOnClickListener {
+            openHistory()
+        }
+        buttonRegister.setOnClickListener {
+            saveSessionChanges()
+        }
     }
 
     private fun openHistory() {
         val intent = Intent(this, HistoryActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
         finish()
     }
 
-    fun saveSessionChanges(view: View) {
+    private fun saveSessionChanges() {
         if (session != null) {
             repo.updateSessionNameDescription(session!!.id, editTextSessionName.text.toString(), editTextSessionDescription.text.toString())
-            var intent = Intent(this, RenameOldSessionActivity::class.java)
+            val intent = Intent(this, RenameOldSessionActivity::class.java)
             intent.putExtra(C.OLD_SESSION_ID, session!!.id)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP;
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
         } else {

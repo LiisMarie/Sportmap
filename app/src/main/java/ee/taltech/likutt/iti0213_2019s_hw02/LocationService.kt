@@ -55,12 +55,12 @@ class LocationService : Service() {
     private var distanceWPTotal = 0f
     private var locationWP: Location? = null
 
-    val timer = Timer()
+    private val timer = Timer()
     var curSpentTime: Long = 0L
     var curWPStartTime: Date? = null
     var curCPStartTime: Date? = null
 
-    private var checkpoints: ArrayList<Location> = arrayListOf<Location>()
+    private var checkpoints: ArrayList<Location> = arrayListOf()
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
@@ -117,7 +117,7 @@ class LocationService : Service() {
         requestLocationUpdates()
     }
 
-    fun requestLocationUpdates() {
+    private fun requestLocationUpdates() {
         Log.i(TAG, "Requesting location updates")
 
         try {
@@ -182,10 +182,10 @@ class LocationService : Service() {
     }
 
     private fun createLocationRequest() {
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS)
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS)
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-        mLocationRequest.setMaxWaitTime(UPDATE_INTERVAL_IN_MILLISECONDS)
+        mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        mLocationRequest.maxWaitTime = UPDATE_INTERVAL_IN_MILLISECONDS
     }
 
     private fun getLastLocation() {
@@ -231,7 +231,7 @@ class LocationService : Service() {
         curSpentTime = 0L
         curCPStartTime = null
         curWPStartTime = null
-        checkpoints = arrayListOf<Location>()
+        checkpoints = arrayListOf()
     }
 
     override fun onLowMemory() {
@@ -255,7 +255,7 @@ class LocationService : Service() {
         distanceWPDirect = 0f
         distanceWPTotal = 0f
 
-        checkpoints = arrayListOf<Location>()
+        checkpoints = arrayListOf()
 
         timer.schedule(task, 0, 1000)
 

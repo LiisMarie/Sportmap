@@ -20,7 +20,6 @@ class Repository(val context: Context) {
         dbHelper.close()
     }
 
-
     // create
 
     fun addSession(name: String, description: String?, recordedAt: String, duration: Long, speed: String, distance: Float, minSpeed: Double, maxSpeed: Double) : Long {
