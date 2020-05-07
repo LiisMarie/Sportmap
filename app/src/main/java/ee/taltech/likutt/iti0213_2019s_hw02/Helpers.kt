@@ -7,6 +7,10 @@ import android.graphics.drawable.Drawable
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.PolylineOptions
+import java.text.DateFormat
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class Helpers {
@@ -76,6 +80,25 @@ class Helpers {
                             TimeUnit.MILLISECONDS.toMinutes(millis)
                     )
             )
+        }
+
+        fun toISO8601UTC(date: Date): String {
+            val tz = TimeZone.getTimeZone("UTC")
+            val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
+            df.setTimeZone(tz)
+            return df.format(date)
+        }
+
+        fun fromISO8601UTC(dateStr: String?): Date? {
+            val tz = TimeZone.getTimeZone("UTC")
+            val df: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
+            df.setTimeZone(tz)
+            try {
+                return df.parse(dateStr)
+            } catch (e: ParseException) {
+                e.printStackTrace()
+            }
+            return null
         }
 
         fun getPaceAsString(millis: Long, distance: Float): String {

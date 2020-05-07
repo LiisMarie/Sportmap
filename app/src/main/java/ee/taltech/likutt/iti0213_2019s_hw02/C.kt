@@ -44,11 +44,16 @@ class C {
         val OLD_SESSION_ID = "ee.taltech.likutt.old_session_id"
 
         val FROM_WHERE_TO_SETTINGS = "ee.taltech.likutt.from_where_to_settings"
-
+/*
         const val LOCAL_LOCATION_TYPE_START = "start"
         const val LOCAL_LOCATION_TYPE_LOC = "loc"
         const val LOCAL_LOCATION_TYPE_CP = "cp"
-        const val LOCAL_LOCATION_TYPE_WP = "wp"
+        const val LOCAL_LOCATION_TYPE_WP = "wp"*/
+
+        const val LOCAL_LOCATION_TYPE_START = "start"
+        const val LOCAL_LOCATION_TYPE_LOC = "00000000-0000-0000-0000-000000000001"
+        const val LOCAL_LOCATION_TYPE_CP = "00000000-0000-0000-0000-000000000002"
+        const val LOCAL_LOCATION_TYPE_WP = "00000000-0000-0000-0000-000000000003"
 
         const val REST_BASE_URL = "https://sportmap.akaver.com/api/v1/"
 

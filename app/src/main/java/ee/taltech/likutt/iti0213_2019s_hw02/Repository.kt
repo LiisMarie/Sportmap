@@ -296,21 +296,6 @@ class Repository(val context: Context) {
         db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
     }
 
-    fun updateSessionSyncedProperty(id: Long, synced: Int) {
-        val contentValues = ContentValues()
-        contentValues.put(DatabaseHelper.SESSION_SYNCED, synced)
-        val where = "${DatabaseHelper.SESSION_ID}='$id'"
-        db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
-    }
-
-    fun updateLocationSyncedProperty(id: Long, synced: Int) {
-        val contentValues = ContentValues()
-        contentValues.put(DatabaseHelper.LOCATION_SYNCED, synced)
-        val where = "${DatabaseHelper.LOCATION_ID}='$id'"
-        db.update(DatabaseHelper.LOCATION_TABLE_NAME, contentValues, where, null)
-    }
-
-
     // delete
 
     fun deleteSessionWithItsLocations(id: Long) {

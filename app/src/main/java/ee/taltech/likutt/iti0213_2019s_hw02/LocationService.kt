@@ -23,6 +23,7 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import java.util.concurrent.TimeUnit
 
 class LocationService : Service() {
     companion object {
@@ -109,13 +110,14 @@ class LocationService : Service() {
 
         getRestToken()
 
+        /*
         // todo syncing
         if (mJwt != null && trackingSessionId != null) {
             startLocalTrackingSession(C.SYNCING_SYNCED)
         } else {
             startLocalTrackingSession(C.SYNCING_NO_NEED_TO_SYNC)
-        }
-
+        }*/
+        //startLocalTrackingSession(C.SYNCING_SYNCED)
 
         getLastLocation()
 
@@ -170,11 +172,12 @@ class LocationService : Service() {
 
         if (prevLocation != null && prevTime != null) {
             val speed = Helpers.getSpeed(Date().time-prevTime!!, location.distanceTo(prevLocation))
-            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, speed, C.SYNCING_SYNCED)  // todo is synced or not
+            speedFromPrevLoc = speed
+            //saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, speed, C.SYNCING_SYNCED)  // todo is synced or not
             prevLocation = location
             prevTime = Date().time
 
-            intent.putExtra(C.LOCATION_UPDATE_ACTION_SPEED, speed)
+            intent.putExtra(C.LOCATION_UPDATE_ACTION_SPEED, speedFromPrevLoc)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
@@ -186,6 +189,8 @@ class LocationService : Service() {
         saveRestLocation(location, C.REST_LOCATIONID_LOC)
 
     }
+
+    var speedFromPrevLoc = 0.toDouble()
 
     private fun createLocationRequest() {
         mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS    // setting interval
@@ -402,9 +407,8 @@ class LocationService : Service() {
                     distanceCPTotal = 0f
 
                     checkpoints.add(locationCP!!)
-                    val syncedValue = saveRestLocation(locationCP!!, C.REST_LOCATIONID_CP)
-                    Log.d("SYNCEDVALUE ", syncedValue.toString())
-                    saveLocalLocation(locationCP!!, C.LOCAL_LOCATION_TYPE_CP, null, syncedValue)  // todo syncing
+                    saveRestLocation(locationCP!!, C.REST_LOCATIONID_CP)
+                    //saveLocalLocation(locationCP!!, C.LOCAL_LOCATION_TYPE_CP, null, syncedValue)  // todo syncing
                     sendCPdata()
                     showNotification()
                 }
@@ -414,12 +418,12 @@ class LocationService : Service() {
 
     // LOCAL DATABASE ACTIONS
 
-    private fun startLocalTrackingSession(synced: Int) {
+    private fun startLocalTrackingSession(synced: Int, date: Date) {
         Log.d(TAG, "startLocalTrackingSession")
         localTrackingSessionId = repo.addSession(
-                Date().toString(),
-                Date().toString(),
-                Date().toString(),
+                date.toString(),
+                date.toString(),
+                dateFormat.format(date),
                 0,
                 0.toString(),
                 0f,
@@ -437,7 +441,7 @@ class LocationService : Service() {
                     localTrackingSessionId!!,
                     location_type,
                     speed,
-                    Date().toString(),
+                    dateFormat.format(Date(location.time)),
                     synced
             )
         }
@@ -451,12 +455,18 @@ class LocationService : Service() {
         Log.d(TAG, "getRestToken")
         val handler = WebApiSingletonHandler.getInstance(applicationContext)
 
-        val user = repo.getUser() ?: return
+        val user = repo.getUser()
+        if (user == null) {
+            startLocalTrackingSession(C.SYNCING_NO_NEED_TO_SYNC, Date())
+            return
+        }
         // if no user has been saved then return
 
         val requestJsonParameters = JSONObject()
         requestJsonParameters.put("email", user.email)
         requestJsonParameters.put("password", user.password)
+
+        val date = Date()
 
         val httpRequest = JsonObjectRequest(
             Request.Method.POST,
@@ -466,24 +476,28 @@ class LocationService : Service() {
                 Log.d(TAG, response.toString())
                 Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
                 mJwt = response.getString("token")
-                startRestTrackingSession()
+                startRestTrackingSession(date)
             },
             Response.ErrorListener { error ->
                 Log.d(TAG, "ERROR: " + error.toString())
+
+                startLocalTrackingSession(C.SYNCING_NO_NEED_TO_SYNC, date)
             }
         )
 
         handler.addToRequestQueue(httpRequest)
     }
 
-    private fun startRestTrackingSession() {
+    private fun startRestTrackingSession(date: Date) {
         Log.d(TAG, "startRestTrackingSession")
         val handler = WebApiSingletonHandler.getInstance(applicationContext)
         val requestJsonParameters = JSONObject()
-        requestJsonParameters.put("name", Date().toString())
-        requestJsonParameters.put("description", Date().toString())
+        requestJsonParameters.put("name", date.toString())
+        requestJsonParameters.put("description", date.toString())
         requestJsonParameters.put("paceMin", minSpeed)
         requestJsonParameters.put("paceMax", maxSpeed)
+
+        requestJsonParameters.put("recordedAt", dateFormat.format(date))
 
         val httpRequest = object : JsonObjectRequest(
             Method.POST,
@@ -493,9 +507,13 @@ class LocationService : Service() {
                 Log.d(TAG, response.toString())
                 Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
                 trackingSessionId = response.getString("id")
+
+                startLocalTrackingSession(C.SYNCING_SYNCED, date)
             },
             Response.ErrorListener { error ->
                 Log.d(TAG, "ERROR: " + error.toString())
+
+                startLocalTrackingSession(C.SYNCING_NOT_SYNCED, date)
             }
         ) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -511,11 +529,19 @@ class LocationService : Service() {
 
     }
 
-    private fun saveRestLocation(location: Location, location_type: String) : Int {
+    private fun saveRestLocation(location: Location, location_type: String) {
         Log.d(TAG, "saveRestLocation")
 
+        var speed = 0.toDouble()
+        if (prevLocation != null && prevTime != null) {
+            speed = Helpers.getSpeed(location.time-prevTime!!, location.distanceTo(prevLocation))
+        }
+
+        Log.d(TAG, "speedFromPrevLoc " + speedFromPrevLoc)
+
         if (mJwt == null || trackingSessionId == null) {
-            return C.SYNCING_NO_NEED_TO_SYNC
+            saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NOT_SYNCED)
+            return
         }
 
         val handler = WebApiSingletonHandler.getInstance(applicationContext)
@@ -533,7 +559,6 @@ class LocationService : Service() {
         requestJsonParameters.put("gpsSessionId", trackingSessionId)
         requestJsonParameters.put("gpsLocationTypeId", location_type)
 
-        var wasSynced = false  // todo check if it works
         val httpRequest = object : JsonObjectRequest(
             Method.POST,
             C.REST_BASE_URL + "GpsLocations",
@@ -541,12 +566,13 @@ class LocationService : Service() {
             Response.Listener { response ->
                 Log.d(TAG, response.toString())
                 Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
-                wasSynced = true
-                Log.d(TAG, "SYNCEDVALUE" + "succceeeded")
+
+                saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_SYNCED)
             },
             Response.ErrorListener { error ->
                 Log.d(TAG, "ERROR: " + error.toString())
-                Log.d(TAG, "SYNCEDVALUE" + "errrror")
+
+                saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NOT_SYNCED)
             }
         ) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -559,11 +585,6 @@ class LocationService : Service() {
             }
         }
         handler.addToRequestQueue(httpRequest)
-        Log.d(TAG, "SYNCEDVALUE" + " will return")
-        if (wasSynced) {
-            return C.SYNCING_SYNCED
-        }
-        return C.SYNCING_NOT_SYNCED
     }
 
 }

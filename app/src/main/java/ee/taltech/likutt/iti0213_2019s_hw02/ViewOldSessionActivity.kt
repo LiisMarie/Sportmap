@@ -93,6 +93,8 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         val locations = repo.getLocationsForGivenSession(session!!.id)
         val colorMap = Helpers.generateColorsForSpeeds(session!!.minSpeed, session!!.maxSpeed)
 
+        Log.d(TAG, "LOCATIONS " + locations)
+
         var i = 0
         var prevLoc : LatLng? = null
         while (i < locations.size) {
@@ -105,7 +107,6 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLatLng, 17f))  // zooms in on start location
                     drawStart(curLatLng)
                     prevLoc = curLatLng
-
                 }
                 C.LOCAL_LOCATION_TYPE_CP -> {
                     drawCheckpoint(curLatLng)
@@ -117,7 +118,10 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
                         speedSecPerKm = loc.speed!!.times(60)
                     }
 
-                    mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc!!).width(10f).color(Helpers.getColorForSpeed(colorMap, speedSecPerKm, session!!.minSpeed, session!!.maxSpeed)))
+                    if (prevLoc != null) {
+                        mMap.addPolyline(PolylineOptions().add(curLatLng, prevLoc).width(10f).color(Helpers.getColorForSpeed(colorMap, speedSecPerKm, session!!.minSpeed, session!!.maxSpeed)))
+                    }
+
                     prevLoc = curLatLng
                 }
             }
