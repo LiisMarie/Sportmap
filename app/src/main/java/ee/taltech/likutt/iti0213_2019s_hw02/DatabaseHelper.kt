@@ -23,6 +23,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val SESSION_DISTANCE = "distance"
         const val SESSION_MIN_SPEED = "minSpeed"
         const val SESSION_MAX_SPEED = "maxSpeed"
+        const val SESSION_SYNCED = "synced"
 
         const val LOCATION_ID = "_id"
         const val LOCATION_LATITUDE = "latitude"
@@ -31,6 +32,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val LOCATION_SESSION_ID = "sessionId"
         const val LOCATION_TYPE = "type"  // LOC or CP
         const val LOCATION_SPEED = "speed"  // speed from previous location to current one
+        const val LOCATION_SYNCED = "synced"
+
 
         const val ACCOUNT_ID = "_id"
         const val ACCOUNT_EMAIL = "email"
@@ -55,7 +58,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         "$SESSION_SPEED TEXT NOT NULL, " +
                         "$SESSION_DISTANCE REAL NOT NULL, " +
                         "$SESSION_MIN_SPEED REAL NOT NULL, " +
-                        "$SESSION_MAX_SPEED REAL NOT NULL" +
+                        "$SESSION_MAX_SPEED REAL NOT NULL, " +
+                        "$SESSION_SYNCED INTEGER NOT NULL" +
                         ");"
         const val SQL_DELETE_TABLE_SESSION = "DROP TABLE IF EXISTS $SESSION_TABLE_NAME"
 
@@ -67,7 +71,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         "$LOCATION_RECORDED_AT TEXT NOT NULL, " +
                         "$LOCATION_SESSION_ID TEXT NOT NULL, " +
                         "$LOCATION_TYPE TEXT NOT NULL, " +
-                        "$LOCATION_SPEED REAL" +
+                        "$LOCATION_SPEED REAL, " +
+                        "$LOCATION_SYNCED INTEGER NOT NULL" +
                         ");"
         const val SQL_DELETE_TABLE_LOCATION = "DROP TABLE IF EXISTS $LOCATION_TABLE_NAME"
 

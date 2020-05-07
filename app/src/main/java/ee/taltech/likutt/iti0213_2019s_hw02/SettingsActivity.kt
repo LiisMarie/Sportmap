@@ -52,8 +52,8 @@ class SettingsActivity : AppCompatActivity() {
         buttonUpdateSettings.setOnClickListener {
             Log.d(TAG, editTextMinSpeed.text.toString()) // x > 0
             Log.d(TAG, editTextMaxSpeed.text.toString()) // x > min
-            Log.d(TAG, editTextGpsUpdateFrequency.text.toString()) // x > 0
-            Log.d(TAG, editTextSyncingInterval.text.toString())  // x > 0
+            Log.d(TAG, editTextGpsUpdateFrequency.text.toString()) // x > 0  // in milliseconds  MAX = 1s
+            Log.d(TAG, editTextSyncingInterval.text.toString())  // x > 0  // in milliseconds  MAX = 60s
 
             if (editTextMinSpeed.text.toString() != "" && editTextMaxSpeed.text.toString() != "") {
                 // user input is in minutes, backend needs it to be in seconds

@@ -6,10 +6,12 @@ class TrackingLocation(var id: Int,
                        var recordedAt: String,
                        var sessionId: Long,
                        var type: String,
-                       var speed: Double?) {
+                       var speed: Double?,
+                       var synced: Int
+) {
 
     override fun toString(): String {
         return "id: $id, latitude: $latitude, longitude: $longitude, recordedAt: $recordedAt, " +
-                "sessionId: $sessionId, type: $type, speed: $speed"
+                "sessionId: $sessionId, type: $type, speed: $speed, synced: $synced"
     }
 }
