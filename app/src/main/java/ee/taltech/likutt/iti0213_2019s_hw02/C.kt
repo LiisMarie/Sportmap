@@ -6,6 +6,10 @@ class C {
         val NOTIFICATION_ACTION_WP = "ee.taltech.likutt.wp"
         val NOTIFICATION_ACTION_CP = "ee.taltech.likutt.cp"
 
+        val UPDATE_SETTINGS = "ee.taltech.likutt.update_settings"
+        val GPS_UPDATE_FRQUENCY = "ee.taltech.likutt.gps_update_frequency"
+        val SYNCING_INTERVAL = "ee.taltech.likutt.syncing_interval"
+
         val LOCATION_UPDATE_ACTION = "ee.taltech.likutt.location_update"
 
         val LOCATION_UPDATE_ACTION_LATITUDE = "ee.taltech.likutt.location_update.latitude"

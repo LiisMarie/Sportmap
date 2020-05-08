@@ -23,7 +23,6 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
-import java.util.concurrent.TimeUnit
 
 class LocationService : Service() {
     companion object {
@@ -93,9 +92,17 @@ class LocationService : Service() {
 
         repo = Repository(this).open()
 
+        val settings = repo.getSettings()
+
+        if (settings != null) {
+            UPDATE_INTERVAL_IN_MILLISECONDS = settings.gpsUpdateFrequency
+            FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
+        }
+
         broadcastReceiverIntentFilter.addAction(C.NOTIFICATION_ACTION_CP)
         broadcastReceiverIntentFilter.addAction(C.NOTIFICATION_ACTION_WP)
         broadcastReceiverIntentFilter.addAction(C.LOCATION_UPDATE_ACTION)
+        broadcastReceiverIntentFilter.addAction(C.UPDATE_SETTINGS)
 
         registerReceiver(broadcastReceiver, broadcastReceiverIntentFilter)
 
@@ -390,6 +397,8 @@ class LocationService : Service() {
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, intent!!.action)
+            Log.d(TAG, "gpsUpdateFrequency intent")
+
             when(intent.action){
                 C.NOTIFICATION_ACTION_WP -> {
                     curWPStartTime = Date()
@@ -412,6 +421,28 @@ class LocationService : Service() {
                     sendCPdata()
                     showNotification()
                 }
+                C.UPDATE_SETTINGS -> {
+                    // todo logic
+                    // C.GPS_UPDATE_FRQUENCY
+                    // C.SYNCING_INTERVAL
+                    val gpsUpdateFrequency = intent.getLongExtra(C.GPS_UPDATE_FRQUENCY, 2000)
+                    /*
+                    mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS    // setting interval
+                    mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+                    mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                    mLocationRequest.maxWaitTime = UPDATE_INTERVAL_IN_MILLISECONDS
+                     */
+                    mLocationRequest.setInterval(gpsUpdateFrequency)
+                    mLocationRequest.setMaxWaitTime(gpsUpdateFrequency)
+                    mLocationRequest.setFastestInterval(gpsUpdateFrequency / 2)
+
+                    mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
+
+                            //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+                    Log.d(TAG, "gpsUpdateFrequency " + gpsUpdateFrequency)
+                }
+
             }
         }
     }

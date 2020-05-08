@@ -1,11 +1,14 @@
 package ee.taltech.likutt.iti0213_2019s_hw02
 
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_settings.*
+
 
 class SettingsActivity : AppCompatActivity() {
     companion object {
@@ -41,8 +44,17 @@ class SettingsActivity : AppCompatActivity() {
         if (settings != null) {
             editTextMinSpeed.setText((settings.minSpeed / 60).toString())
             editTextMaxSpeed.setText((settings.maxSpeed / 60).toString())
-            editTextGpsUpdateFrequency.setText((settings.gpsUpdateFrequency / 1000).toString())
+            editTextGpsUpdateFrequency.setText((settings.gpsUpdateFrequency).toString())
             editTextSyncingInterval.setText((settings.syncingInterval / 1000).toString())
+        }
+
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            val serv = service.service.className
+            Log.d(TAG, "SERVICEserv " + serv)
+            if (serv == "ee.taltech.likutt.iti0213_2019s_hw02.LocationService") {
+                //todo
+            }
         }
 
         // TODO...... display current settings
@@ -53,7 +65,7 @@ class SettingsActivity : AppCompatActivity() {
             Log.d(TAG, editTextMinSpeed.text.toString()) // x > 0
             Log.d(TAG, editTextMaxSpeed.text.toString()) // x > min
             Log.d(TAG, editTextGpsUpdateFrequency.text.toString()) // x > 0  // in milliseconds  MAX = 1s
-            Log.d(TAG, editTextSyncingInterval.text.toString())  // x > 0  // in milliseconds  MAX = 60s
+            Log.d(TAG, editTextSyncingInterval.text.toString())  // x > 0  // in seconds  MAX = 60s
 
             if (editTextMinSpeed.text.toString() != "" && editTextMaxSpeed.text.toString() != "") {
                 // user input is in minutes, backend needs it to be in seconds
@@ -62,21 +74,26 @@ class SettingsActivity : AppCompatActivity() {
 
                 if (Helpers.validateSpeedInput(minSpeed, maxSpeed)) {
 
-                    repo.deleteSettings()
-                    repo.addSettings(minSpeed, maxSpeed, 2000, 2000)
+                    if (editTextGpsUpdateFrequency.text.toString().toLong() in 2..5000) {
 
-                    Toast.makeText(this, "Settings updated", Toast.LENGTH_SHORT).show()
+                        repo.deleteSettings()
+                        repo.addSettings(minSpeed, maxSpeed, editTextGpsUpdateFrequency.text.toString().toLong(), 2000)
 
-                    if (fromWhere == "MAP") {
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finishAffinity()  // closes all previous views
-                    }
+                        // sending changed settings data to LocationService
+                        val intent = Intent(C.UPDATE_SETTINGS)
+                        intent.putExtra(C.GPS_UPDATE_FRQUENCY, editTextGpsUpdateFrequency.text.toString().toLong())
+                        // intent.putExtra(C.SYNCING_INTERVAL, editTextSyncingInterval.text.toString().toLong() * 1000)
+                        sendBroadcast(intent)
 
-                    /*
-                    todo in the future
-                    if (gpsUpdateFrequency OK) {
-                        if (syncingInterval OK) {
+                        Toast.makeText(this, "Settings updated", Toast.LENGTH_SHORT).show()
+
+                        if (fromWhere == "MAP") {
+                            val intent = Intent(this, MainActivity::class.java)
+                            startActivity(intent)
+                            finishAffinity()  // closes all previous views
+                        }
+                        /*
+                        if (editTextSyncingInterval.text.toString().toLong() * 1000 <= 60000) {
 
                             // todo saving logic when everything is ok
                             // todo if went to settings from map then return to map
@@ -87,11 +104,11 @@ class SettingsActivity : AppCompatActivity() {
 
                         } else {
                             Toast.makeText(this, "Recheck syncing interval", Toast.LENGTH_SHORT).show()
-                        }
+                        }*/
                     } else {
                         Toast.makeText(this, "Recheck GPS update frequency", Toast.LENGTH_SHORT).show()
                     }
-                    */
+
 
                 } else {
                     Toast.makeText(this, "Recheck speed", Toast.LENGTH_SHORT).show()

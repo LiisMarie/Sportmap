@@ -80,9 +80,11 @@
     <string name="activity_settings_text_view_set_speed">Set speed for active session (km per minute)</string>
     <string name="activity_settings_text_view_min_speed">MIN speed</string>
     <string name="activity_settings_text_view_max_speed">MAX speed (x > min)</string>
-    <string name="activity_settings_text_view_gps_update_frequency">GPS update frequency</string>
-    <string name="activity_settings_text_view_syncing_interval">Syncing interval (in seconds)</string>
+    <string name="activity_settings_text_view_gps_update_frequency">GPS update frequency (5000 >= x)</string>
+    <string name="activity_settings_text_view_syncing_interval">Syncing interval (60 >= x)</string>
     <string name="activity_settings_button_update_settings">Update settings</string>
+    <string name="activity_settings_text_view_milliseconds">milliseconds</string>
+    <string name="activity_settings_text_view_seconds">seconds</string>
 
 
     <!-- activity_view_old_session -->
@@ -94,16 +96,5 @@
     <string name="recycler_old_session_button_edit">Edit</string>
     <string name="recycler_old_session_button_delete">Delete</string>
     <string name="recycler_old_session_text_view_recorded_at">Recorded at:</string>
-
-
-    <!--  -->
-    <!--  -->
-    <!--  -->
-    <!--  -->
-    <!--  -->
-    <!--  -->
-    <!--  -->
-
-
 
 </resources>
