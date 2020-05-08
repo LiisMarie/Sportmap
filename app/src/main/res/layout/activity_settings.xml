@@ -61,7 +61,7 @@
         android:ems="10"
         android:inputType="numberDecimal"
         app:layout_constraintStart_toStartOf="@+id/textView15"
-        app:layout_constraintTop_toBottomOf="@+id/textView15" />
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxSyncingAsap" />
 
     <EditText
         android:id="@+id/editTextGpsUpdateFrequency"
@@ -94,6 +94,7 @@
         android:layout_marginTop="16dp"
         android:text="@string/activity_settings_text_view_set_speed"
         android:textSize="16sp"
+        android:textColor="#000000"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
@@ -111,6 +112,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/activity_settings_text_view_min_speed"
         android:textSize="15sp"
+        android:textColor="#000000"
         app:layout_constraintStart_toStartOf="@+id/textView10"
         app:layout_constraintTop_toBottomOf="@+id/textView10" />
 
@@ -121,6 +123,7 @@
         android:layout_marginStart="8dp"
         android:text="@string/activity_settings_text_view_max_speed"
         android:textSize="15sp"
+        android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="@+id/textView11"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toTopOf="@+id/textView11" />
@@ -131,6 +134,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
+        android:textColor="#000000"
         android:text="@string/activity_settings_text_view_syncing_interval"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -143,6 +147,7 @@
         android:layout_marginTop="24dp"
         android:text="@string/activity_settings_text_view_gps_update_frequency"
         android:textSize="16sp"
+        android:textColor="#000000"
         app:layout_constraintStart_toStartOf="@+id/textView10"
         app:layout_constraintTop_toBottomOf="@+id/editTextMinSpeed" />
 
@@ -159,22 +164,36 @@
 
     <TextView
         android:id="@+id/textView22"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
         android:text="@string/activity_settings_text_view_milliseconds"
         app:layout_constraintBottom_toBottomOf="@+id/editTextGpsUpdateFrequency"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/editTextGpsUpdateFrequency"
         app:layout_constraintTop_toTopOf="@+id/editTextGpsUpdateFrequency" />
 
     <TextView
         android:id="@+id/textView23"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
         android:text="@string/activity_settings_text_view_seconds"
         app:layout_constraintBottom_toBottomOf="@+id/editTextSyncingInterval"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/editTextSyncingInterval"
         app:layout_constraintTop_toTopOf="@+id/editTextSyncingInterval" />
+
+    <CheckBox
+        android:id="@+id/checkBoxSyncingAsap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="ASAP"
+        app:layout_constraintBottom_toBottomOf="@+id/textView15"
+        app:layout_constraintStart_toEndOf="@+id/textView15"
+        app:layout_constraintTop_toTopOf="@+id/textView15" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

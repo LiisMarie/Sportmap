@@ -48,6 +48,7 @@
         android:layout_height="22dp"
         android:layout_marginTop="24dp"
         android:text="@string/activity_account_text_view_email"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/editTextFirstName"
         app:layout_constraintTop_toBottomOf="@+id/editTextLastName" />
@@ -72,6 +73,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:text="@string/activity_account_text_view_first_name"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
@@ -122,6 +124,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/activity_account_text_view_last_name"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView8"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
@@ -145,6 +148,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_account_text_view_password"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/textView8"
         app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
@@ -173,6 +177,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_account_text_view_repeat_password"
+        android:textColor="#000000"
         app:layout_constraintStart_toStartOf="@+id/textView8"
         app:layout_constraintTop_toBottomOf="@+id/editTextPassword" />
 

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RegisterActivity">
+    tools:context=".RegisterActivity"
+    android:fillViewport="true">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -68,6 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_register_text_view_email"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/textView5"
         app:layout_constraintTop_toBottomOf="@+id/editTextLastName" />
@@ -79,6 +81,7 @@
         android:layout_marginTop="24dp"
         android:text="@string/activity_register_text_view_password"
         android:textSize="16sp"
+        android:textColor="#000000"
         app:layout_constraintStart_toStartOf="@+id/editTextFirstName"
         app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
 
@@ -90,6 +93,7 @@
         android:background="@drawable/roundedbutton"
         android:hapticFeedbackEnabled="true"
         android:text="@string/activity_register_button_register"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/editTextPassword"
         app:layout_constraintTop_toBottomOf="@+id/editTextRepeatPassword" />
 
@@ -123,6 +127,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:text="@string/activity_register_text_view_first_name"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonLogin" />
@@ -133,6 +138,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/activity_register_text_view_last_name"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView5"
         app:layout_constraintStart_toStartOf="@+id/guideline3"
@@ -157,6 +163,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_register_text_view_repeat_password"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/textView5"
         app:layout_constraintTop_toBottomOf="@+id/editTextPassword" />

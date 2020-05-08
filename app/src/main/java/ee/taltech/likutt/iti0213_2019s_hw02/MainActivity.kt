@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         repo = Repository(this).open()
         var settings = repo.getSettings()
         if (settings == null) {
-            repo.addSettings((6*60).toDouble(), (18*60).toDouble(), 2000, 2000)
+            repo.addSettings((6*60).toDouble(), (18*60).toDouble(), 2000, 0)
         }
         settings = repo.getSettings()
         minSpeed = settings!!.minSpeed

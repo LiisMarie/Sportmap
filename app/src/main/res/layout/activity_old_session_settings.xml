@@ -48,6 +48,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:text="@string/activity_old_session_settings_text_view_set_speed"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
@@ -58,6 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_old_session_settings_text_view_max_speed"
+        android:textColor="#000000"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="@+id/editTextMinSpeed"
         app:layout_constraintTop_toBottomOf="@+id/editTextMinSpeed" />
@@ -68,6 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_old_session_settings_text_view_min_speed"
+        android:textColor="#000000"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="@+id/editTextMinSpeed"
         app:layout_constraintTop_toBottomOf="@+id/textView19" />

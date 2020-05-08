@@ -71,6 +71,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/activity_login_text_view_email"
         android:textSize="16sp"
+        android:textColor="#000000"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonRegister" />
 
@@ -80,6 +81,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/activity_login_text_view_password"
+        android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
