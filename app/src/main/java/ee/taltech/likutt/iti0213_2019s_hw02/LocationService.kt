@@ -35,6 +35,9 @@ class LocationService : Service() {
     private var UPDATE_INTERVAL_IN_MILLISECONDS: Long = 2000
     private var FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
+    // for defining the minimum necessary accuracy
+    private val MINIMUM_ACCURACY = 100.0
+
     private val broadcastReceiver = InnerBroadcastReceiver()
     private val broadcastReceiverIntentFilter: IntentFilter = IntentFilter()
 
@@ -62,8 +65,6 @@ class LocationService : Service() {
     var curWPStartTime: Date? = null
     var curCPStartTime: Date? = null
 
-    private var checkpoints: ArrayList<Location> = arrayListOf()
-
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
     private var minSpeed: Double = (6*60).toDouble()  // 1 km within 6 min  -- minspeed=6*60 km / per sec
@@ -76,6 +77,7 @@ class LocationService : Service() {
     private var mJwt: String? = null
     private var trackingSessionId: String? = null
     private var syncingNeeded = false  // to check if syncing is necessary or not
+    private var unsyncedLocations: LinkedHashMap<Location, String> = LinkedHashMap<Location, String>()  // stores unsynced locations
 
     // for local database
     private lateinit var repo: Repository
@@ -168,15 +170,21 @@ class LocationService : Service() {
             )
         }
     }
-
     private fun onNewLocation(location: Location) {
         Log.i(TAG, "New location: $location")
+        Log.i(TAG, "New location accuracy: ${location.accuracy}")
+
 
         if (currentLocation == null){
             locationStart = location
             saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_START, 0.toDouble(), C.SYNCING_SYNCED)
             prevLocation = location
             prevTime = Date().time
+        } else if (location.distanceTo(currentLocation) < 1) {
+            Log.d(TAG, "onNewLocation newLocation.distanceTo(currentLocation) < 1")
+            return
+        } else if (location.accuracy > MINIMUM_ACCURACY) {
+
         } else {
             distanceOverallDirect = location.distanceTo(locationStart)
             distanceOverallTotal += location.distanceTo(currentLocation)
@@ -268,7 +276,6 @@ class LocationService : Service() {
         curSpentTime = 0L
         curCPStartTime = null
         curWPStartTime = null
-        checkpoints = arrayListOf()
     }
 
     override fun onLowMemory() {
@@ -291,9 +298,7 @@ class LocationService : Service() {
         distanceCPTotal = 0f
         distanceWPDirect = 0f
         distanceWPTotal = 0f
-
-        checkpoints = arrayListOf()
-
+        
         timer.schedule(task, 0, 1000)
 
         showNotification()
@@ -459,8 +464,6 @@ class LocationService : Service() {
                     distanceCPDirect = 0f
                     distanceCPTotal = 0f
 
-                    checkpoints.add(locationCP!!)
-
                     saveLocation(locationCP!!, C.REST_LOCATIONID_CP, true)
 
                     sendCPdata()
@@ -624,9 +627,6 @@ class LocationService : Service() {
         handler.addToRequestQueue(httpRequest)
 
     }
-
-    private var unsyncedLocations: LinkedHashMap<Location, String> = LinkedHashMap<Location, String>()
-
 
     private fun saveRestLocation(location: Location, location_type: String, saveLocallyToo: Boolean) {
         Log.d(TAG, "saveRestLocation")
