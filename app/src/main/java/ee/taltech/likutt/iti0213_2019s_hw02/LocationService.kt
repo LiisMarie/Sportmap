@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
@@ -22,7 +24,7 @@ import com.google.android.gms.location.*
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashMap
 
 class LocationService : Service() {
     companion object {
@@ -73,10 +75,32 @@ class LocationService : Service() {
     // for backend
     private var mJwt: String? = null
     private var trackingSessionId: String? = null
+    private var syncingNeeded = false  // to check if syncing is necessary or not
+    private var everythingSynced = true  // to check if everything has been synced so far
 
     // for local database
     private lateinit var repo: Repository
     private var localTrackingSessionId: Long? = null
+
+    var syncingInterval : Long = 0
+    var syncingTimer : Timer? = null
+    private fun initSyncingTimer() {
+        syncingTimer = Timer()
+        Log.d(TAG, "INITIALIZING TIMER " + syncingInterval)
+        syncingTimer!!.schedule(object : TimerTask() {
+            override fun run() {
+
+                syncEverything()
+            }
+        }, syncingInterval) // Minimum delay is 1 millisecond. If lower, it throws IllegalArgumentException
+    }
+
+    private fun stopSyncingTimer() {
+        if (syncingTimer != null) {
+            syncingTimer!!.cancel();
+        }
+        syncingTimer = null
+    }
 
     val task = object: TimerTask() {
         var startTime = Date()
@@ -121,6 +145,14 @@ class LocationService : Service() {
 
         createLocationRequest()
         requestLocationUpdates()
+
+        if (settings != null && syncingNeeded) {
+            syncingInterval = settings.syncingInterval
+            if (syncingInterval != 0.toLong()) {
+                initSyncingTimer()
+            }
+        }
+        Log.d(TAG, "SYNCINGLOCATIONS " + syncingNeeded)
     }
 
     private fun requestLocationUpdates() {
@@ -144,7 +176,7 @@ class LocationService : Service() {
 
         if (currentLocation == null){
             locationStart = location
-            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_START, 0.toDouble(), C.SYNCING_SYNCED)  // todo synced
+            saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_START, 0.toDouble(), C.SYNCING_SYNCED)
             prevLocation = location
             prevTime = Date().time
         } else {
@@ -171,7 +203,6 @@ class LocationService : Service() {
         if (prevLocation != null && prevTime != null) {
             val speed = Helpers.getSpeed(Date().time-prevTime!!, location.distanceTo(prevLocation))
             speedFromPrevLoc = speed
-            //saveLocalLocation(location, C.LOCAL_LOCATION_TYPE_LOC, speed, C.SYNCING_SYNCED)  // todo is synced or not
             prevLocation = location
             prevTime = Date().time
 
@@ -184,9 +215,7 @@ class LocationService : Service() {
 
         showNotification()
 
-        // todo syncing
-        saveRestLocation(location, C.REST_LOCATIONID_LOC, true)
-
+        saveLocation(location, C.REST_LOCATIONID_LOC, true)
     }
 
     var speedFromPrevLoc = 0.toDouble()
@@ -388,7 +417,28 @@ class LocationService : Service() {
 
     // location saving logic
     private fun saveLocation(location: Location, location_type: String, saveLocallyToo: Boolean) {
-        saveRestLocation(location, location_type, saveLocallyToo)
+        Log.d(TAG, "SYNCINGLOCATIONS everythingsynced " + everythingSynced.toString())
+        Log.d(TAG, "SYNCINGLOCATIONS " + unsyncedLocations)
+        if (syncingTimer == null) {
+            if (syncingNeeded) {
+                saveRestLocation(location, location_type, saveLocallyToo)
+
+                if (unsyncedLocations.isNotEmpty()) {
+                    syncEverything()
+                }
+            } else {
+                saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NO_NEED_TO_SYNC)
+            }
+        } else {
+            if (syncingNeeded) {
+                saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NOT_SYNCED)
+                // todo saving to list
+            } else {
+                saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NO_NEED_TO_SYNC)
+            }
+
+        }
+
     }
 
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
@@ -402,7 +452,6 @@ class LocationService : Service() {
                     distanceWPDirect = 0f
                     distanceWPTotal = 0f
 
-                    // todo syncing
                     saveLocation(locationWP!!, C.REST_LOCATIONID_WP, true)
 
                     sendWPdata()
@@ -416,11 +465,12 @@ class LocationService : Service() {
 
                     checkpoints.add(locationCP!!)
 
-                    // todo syncing
                     saveLocation(locationCP!!, C.REST_LOCATIONID_CP, true)
 
                     sendCPdata()
                     showNotification()
+
+
                 }
                 C.UPDATE_SETTINGS -> {
                     val gpsUpdateFrequency = intent.getLongExtra(C.GPS_UPDATE_FRQUENCY, 2000)
@@ -429,8 +479,12 @@ class LocationService : Service() {
                     mLocationRequest.setFastestInterval(gpsUpdateFrequency / 2)
                     mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
 
-                    // todo logic
-                    // C.SYNCING_INTERVAL
+                    syncingInterval = intent.getLongExtra(C.SYNCING_INTERVAL, 0)
+                    if (syncingInterval == 0.toLong()) {
+                        stopSyncingTimer()
+                    } else if (syncingNeeded) {
+                        initSyncingTimer()
+                    }
                 }
 
             }
@@ -479,9 +533,12 @@ class LocationService : Service() {
         val user = repo.getUser()
         if (user == null) {
             startLocalTrackingSession(C.SYNCING_NO_NEED_TO_SYNC, Date())
+            syncingNeeded = false
             return  // if no user has been saved then return, and syncing isnt needed
 
         }
+        // user is logged in so we need to sync to server
+        syncingNeeded = true
 
         val requestJsonParameters = JSONObject()
         requestJsonParameters.put("email", user.email)
@@ -498,9 +555,7 @@ class LocationService : Service() {
                 Log.d(TAG, "DATABASE RESPONSE: " + response.toString())
                 mJwt = response.getString("token")
 
-                if (saveLocallyToo) {
-                    startRestTrackingSession(date, true)
-                }
+                startRestTrackingSession(date, saveLocallyToo)
 
             },
             Response.ErrorListener { error ->
@@ -520,12 +575,25 @@ class LocationService : Service() {
         Log.d(TAG, "startRestTrackingSession")
         val handler = WebApiSingletonHandler.getInstance(applicationContext)
         val requestJsonParameters = JSONObject()
-        requestJsonParameters.put("name", date.toString())
-        requestJsonParameters.put("description", date.toString())
-        requestJsonParameters.put("paceMin", minSpeed)
-        requestJsonParameters.put("paceMax", maxSpeed)
 
-        requestJsonParameters.put("recordedAt", dateFormat.format(date))
+        if (saveLocallyToo) {
+            requestJsonParameters.put("name", date.toString())
+            requestJsonParameters.put("description", date.toString())
+            requestJsonParameters.put("paceMin", minSpeed)
+            requestJsonParameters.put("paceMax", maxSpeed)
+            requestJsonParameters.put("recordedAt", dateFormat.format(date))
+        } else {
+            if (localTrackingSessionId != null) {
+                val currentSession = repo.getSessionById(localTrackingSessionId!!)
+                if (currentSession != null) {
+                    requestJsonParameters.put("name", currentSession.name)
+                    requestJsonParameters.put("description", currentSession.description)
+                    requestJsonParameters.put("paceMin", currentSession.minSpeed)
+                    requestJsonParameters.put("paceMax", currentSession.maxSpeed)
+                    requestJsonParameters.put("recordedAt", currentSession.recordedAt)
+                }
+            }
+        }
 
         val httpRequest = object : JsonObjectRequest(
             Method.POST,
@@ -561,20 +629,17 @@ class LocationService : Service() {
 
     }
 
+    private var unsyncedLocations: LinkedHashMap<Location, String> = LinkedHashMap<Location, String>()
+
+
     private fun saveRestLocation(location: Location, location_type: String, saveLocallyToo: Boolean) {
         Log.d(TAG, "saveRestLocation")
-
-        var speed = 0.toDouble()
-        if (prevLocation != null && prevTime != null) {
-            speed = Helpers.getSpeed(location.time-prevTime!!, location.distanceTo(prevLocation))
-        }
-
-        Log.d(TAG, "speedFromPrevLoc " + speedFromPrevLoc)
 
         if (mJwt == null || trackingSessionId == null) {
             if (saveLocallyToo) {
                 saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NOT_SYNCED)
             }
+            unsyncedLocations[location] = location_type
             return
         }
 
@@ -610,6 +675,7 @@ class LocationService : Service() {
                 if (saveLocallyToo) {
                     saveLocalLocation(location, location_type, speedFromPrevLoc, C.SYNCING_NOT_SYNCED)
                 }
+                unsyncedLocations[location] = location_type
             }
         ) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -622,6 +688,52 @@ class LocationService : Service() {
             }
         }
         handler.addToRequestQueue(httpRequest)
+    }
+
+    // syncs everything that isnt synced
+    fun syncEverything() {
+        // todo syncs everything that isnt synced
+        // if all is synced then   ---   everythingSynced = true
+        Log.d(TAG, "SYNCEVEERYTHING")
+        if (isNetworkAvailable()) {
+            Log.d(TAG, "SYNCEVEERYTHING network is available")
+
+            if (mJwt == null) {
+                getRestToken(false)
+            }
+            if (trackingSessionId != null && localTrackingSessionId != null) {
+                val tempUnsyncedLocations = LinkedHashMap<Location, String>()
+                tempUnsyncedLocations.putAll(unsyncedLocations)
+                for ((location, type) in tempUnsyncedLocations) {
+                    if (!isNetworkAvailable()) {
+                        break
+                    }
+                    saveRestLocation(location, type, false)
+                    unsyncedLocations.remove(location)
+                }
+                /*
+                val locations = repo.getLocationsForGivenSession(localTrackingSessionId!!)
+                for (location in locations) {
+                    if (location.synced == C.SYNCING_NOT_SYNCED) {
+                        val locationTemp = currentLocation
+                        if (locationTemp != null) {
+                            locationTemp.latitude = location.latitude
+                            locationTemp.longitude = location.longitude
+                            locationTemp.time = location.recordedAt.toLong()
+                            saveRestLocation(locationTemp, location.type, false)
+                        }
+                        repo.updateLocationsSynced(location.id, C.SYNCING_SYNCED)
+
+                    }
+                }*/
+            }
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting == true
     }
 
 }

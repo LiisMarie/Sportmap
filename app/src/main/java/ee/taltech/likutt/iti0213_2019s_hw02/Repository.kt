@@ -184,7 +184,7 @@ class Repository(val context: Context) {
         while (cursor.moveToNext()){
             trackingLocations.add(
                     TrackingLocation(
-                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.LOCATION_ID)),
+                            cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_ID)),
                             cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_LATITUDE)),
                             cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_LONGITUDE)),
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_RECORDED_AT)),
@@ -294,6 +294,13 @@ class Repository(val context: Context) {
         contentValues.put(DatabaseHelper.SESSION_MAX_SPEED, maxSpeed)
         val where = "${DatabaseHelper.SESSION_ID}='$id'"
         db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
+    }
+
+    fun updateLocationsSynced(id: Long, synced: Int) {
+        val contentValues = ContentValues()
+        contentValues.put(DatabaseHelper.LOCATION_SYNCED, synced)
+        val where = "${DatabaseHelper.LOCATION_ID}='$id'"
+        db.update(DatabaseHelper.LOCATION_TABLE_NAME, contentValues, where, null)
     }
 
     // delete

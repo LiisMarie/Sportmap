@@ -52,14 +52,10 @@ class SettingsActivity : AppCompatActivity() {
             checkBoxSyncingAsap.isChecked = settings.syncingInterval == 0.toLong()
         }
 
-        // TODO...... display current settings
-        //  you can change syncing interval in options (ala when received, once in 10 sec, once in 30, sec, etc..).
-        //  It is possible to change gps update frequency
-
         buttonUpdateSettings.setOnClickListener {
             Log.d(TAG, editTextMinSpeed.text.toString()) // x > 0
             Log.d(TAG, editTextMaxSpeed.text.toString()) // x > min
-            Log.d(TAG, editTextGpsUpdateFrequency.text.toString()) // x > 0  // in milliseconds  MAX = 1s
+            Log.d(TAG, editTextGpsUpdateFrequency.text.toString()) // x > 0  // in milliseconds  MAX = 5s
             Log.d(TAG, editTextSyncingInterval.text.toString())  // x > 0  // in seconds  MAX = 60s
 
             if (editTextMinSpeed.text.toString() != "" && editTextMaxSpeed.text.toString() != "") {
@@ -71,7 +67,8 @@ class SettingsActivity : AppCompatActivity() {
 
                     if (editTextGpsUpdateFrequency.text.toString().toLong() in 2..5000) {
 
-                        if (editTextSyncingInterval.text.toString().toLong() * 1000 in 0..60000) {
+                        if (editTextSyncingInterval.text.toString().toLong() * 1000 in 1..60000 ||
+                                editTextSyncingInterval.text.toString().toLong() == 0.toLong()) {
 
                             hideKeyboard()
 
