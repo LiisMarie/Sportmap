@@ -152,7 +152,7 @@
         android:text="@string/recycler_old_session_button_load"
         android:textColor="#FFFAFA"
         android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/buttonEdit"
+        app:layout_constraintEnd_toStartOf="@+id/buttonSend"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -168,7 +168,7 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/buttonRegister"
+        app:layout_constraintStart_toEndOf="@+id/buttonSend"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -198,5 +198,18 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.66" />
+
+    <Button
+        android:id="@+id/buttonSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/colorControlButton"
+        android:text="@string/recycler_old_session_button_send"
+        android:textColor="#FFFAFA"
+        app:layout_constraintEnd_toStartOf="@+id/buttonEdit"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/buttonRegister"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
