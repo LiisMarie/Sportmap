@@ -682,6 +682,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     // ============================================== BROADCAST RECEIVER =============================================
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            // intent has been received
             if (intent != null) {
                 Log.d(TAG, intent!!.action)
 
