@@ -7,7 +7,10 @@ class TrackingLocation(var id: Long,
                        var sessionId: Long,
                        var type: String,
                        var speed: Double?,
-                       var synced: Int
+                       var synced: Int,
+                       var accuracy: Float,
+                       var altitude: Double,
+                       var verticalAccuracy: Float?
 ) {
 
     override fun toString(): String {

@@ -11,10 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import ee.taltech.likutt.iti0213_2019s_hw02.*
 import ee.taltech.likutt.iti0213_2019s_hw02.classes.TrackingSession
 import ee.taltech.likutt.iti0213_2019s_hw02.database.Repository
@@ -148,6 +145,10 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
 
             i += 1
         }
+
+        /*mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(
+                LatLngBounds(LatLng(locations[0].latitude, locations[0].longitude),
+                        LatLng(locations[locations.size-1].latitude, locations[locations.size-1].longitude)), 0))*/
     }
 
     // different start point

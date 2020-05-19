@@ -4,6 +4,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.location.Location
+import android.os.Build
 import ee.taltech.likutt.iti0213_2019s_hw02.classes.Settings
 import ee.taltech.likutt.iti0213_2019s_hw02.classes.TrackingLocation
 import ee.taltech.likutt.iti0213_2019s_hw02.classes.TrackingSession
@@ -30,7 +32,7 @@ class Repository(val context: Context) {
     /* CREATE */
 
     // for adding a session
-    fun addSession(name: String, description: String?, recordedAt: String, duration: Long, speed: String, distance: Float, minSpeed: Double, maxSpeed: Double, synced: Int) : Long {
+    fun addSession(name: String, description: String?, recordedAt: String, duration: Long, speed: String, distance: Float, minSpeed: Double, maxSpeed: Double, synced: Int, restSessionId: String) : Long {
         val contentValues = ContentValues()
 
         contentValues.put(DatabaseHelper.SESSION_NAME, name)
@@ -44,16 +46,16 @@ class Repository(val context: Context) {
         contentValues.put(DatabaseHelper.SESSION_MIN_SPEED, minSpeed)
         contentValues.put(DatabaseHelper.SESSION_MAX_SPEED, maxSpeed)
         contentValues.put(DatabaseHelper.SESSION_SYNCED, synced)
-        val id = db.insert(DatabaseHelper.SESSION_TABLE_NAME, null, contentValues)
+        contentValues.put(DatabaseHelper.SESSION_REST_ID, restSessionId)
 
-        return id
+        return db.insert(DatabaseHelper.SESSION_TABLE_NAME, null, contentValues)
     }
 
     // for adding a location
-    fun addLocation(latitude: Double, longitude: Double, sessionId: Long, type: String, speed: Double?, recordedAt: String, synced: Int) {
+    fun addLocation(location: Location, sessionId: Long, type: String, speed: Double?, recordedAt: String, synced: Int) : Long {
         val contentValues = ContentValues()
-        contentValues.put(DatabaseHelper.LOCATION_LATITUDE, latitude)
-        contentValues.put(DatabaseHelper.LOCATION_LONGITUDE, longitude)
+        contentValues.put(DatabaseHelper.LOCATION_LATITUDE, location.latitude)
+        contentValues.put(DatabaseHelper.LOCATION_LONGITUDE, location.longitude)
         contentValues.put(DatabaseHelper.LOCATION_SESSION_ID, sessionId)
         contentValues.put(DatabaseHelper.LOCATION_TYPE, type)
         if (speed != null) {
@@ -61,7 +63,13 @@ class Repository(val context: Context) {
         }
         contentValues.put(DatabaseHelper.LOCATION_RECORDED_AT, recordedAt)
         contentValues.put(DatabaseHelper.LOCATION_SYNCED, synced)
-        db.insert(DatabaseHelper.LOCATION_TABLE_NAME, null, contentValues)
+        contentValues.put(DatabaseHelper.LOCATION_ACCURACY, location.accuracy)
+        contentValues.put(DatabaseHelper.LOCATION_ALTITUDE, location.altitude)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            contentValues.put(DatabaseHelper.LOCATION_VERTICAL_ACCURACY, location.verticalAccuracyMeters)
+        }
+
+        return db.insert(DatabaseHelper.LOCATION_TABLE_NAME, null, contentValues)
     }
 
     // for adding an user
@@ -101,11 +109,12 @@ class Repository(val context: Context) {
                 DatabaseHelper.SESSION_DISTANCE,
                 DatabaseHelper.SESSION_MIN_SPEED,
                 DatabaseHelper.SESSION_MAX_SPEED,
-                DatabaseHelper.SESSION_SYNCED
+                DatabaseHelper.SESSION_SYNCED,
+                DatabaseHelper.SESSION_REST_ID
         )
         val orderBy = "${DatabaseHelper.SESSION_RECORDED_AT} DESC"
 
-        val cursor = db.query(
+        return db.query(
                 DatabaseHelper.SESSION_TABLE_NAME,
                 columns,
                 null,
@@ -114,8 +123,6 @@ class Repository(val context: Context) {
                 null,
                 orderBy
         )
-
-        return cursor
     }
 
     // fetches locations that are recorded during given session
@@ -128,12 +135,15 @@ class Repository(val context: Context) {
                 DatabaseHelper.LOCATION_SESSION_ID,
                 DatabaseHelper.LOCATION_TYPE,
                 DatabaseHelper.LOCATION_SPEED,
-                DatabaseHelper.LOCATION_SYNCED
+                DatabaseHelper.LOCATION_SYNCED,
+                DatabaseHelper.LOCATION_ACCURACY,
+                DatabaseHelper.LOCATION_ALTITUDE,
+                DatabaseHelper.LOCATION_VERTICAL_ACCURACY
         )
         val orderBy = "${DatabaseHelper.LOCATION_ID} ASC"
         val where = "${DatabaseHelper.LOCATION_SESSION_ID} = $sessionId"
 
-        val cursor = db.query(
+        return db.query(
                 DatabaseHelper.LOCATION_TABLE_NAME,
                 columns,
                 where,
@@ -142,8 +152,6 @@ class Repository(val context: Context) {
                 null,
                 orderBy
         )
-
-        return cursor
     }
 
     // for getting all recorded sessions
@@ -162,7 +170,8 @@ class Repository(val context: Context) {
                             cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.SESSION_DISTANCE)),
                             cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MIN_SPEED)),
                             cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MAX_SPEED)),
-                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SESSION_SYNCED))
+                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SESSION_SYNCED)),
+                            cursor.getString(cursor.getColumnIndex(DatabaseHelper.SESSION_REST_ID))
                     )
             )
         }
@@ -184,7 +193,8 @@ class Repository(val context: Context) {
                         cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.SESSION_DISTANCE)),
                         cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MIN_SPEED)),
                         cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.SESSION_MAX_SPEED)),
-                        cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SESSION_SYNCED))
+                        cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SESSION_SYNCED)),
+                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.SESSION_REST_ID))
                 )
             }
 
@@ -206,8 +216,11 @@ class Repository(val context: Context) {
                             cursor.getLong(cursor.getColumnIndex(DatabaseHelper.LOCATION_SESSION_ID)),
                             cursor.getString(cursor.getColumnIndex(DatabaseHelper.LOCATION_TYPE)),
                             cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_SPEED)),
-                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.LOCATION_SYNCED))
-                    )
+                            cursor.getInt(cursor.getColumnIndex(DatabaseHelper.LOCATION_SYNCED)),
+                            cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.LOCATION_ACCURACY)),
+                            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.LOCATION_ALTITUDE)),
+                            cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.LOCATION_VERTICAL_ACCURACY))
+                            )
             )
         }
         return trackingLocations
@@ -310,6 +323,22 @@ class Repository(val context: Context) {
         val contentValues = ContentValues()
         contentValues.put(DatabaseHelper.SESSION_MIN_SPEED, minSpeed)
         contentValues.put(DatabaseHelper.SESSION_MAX_SPEED, maxSpeed)
+        val where = "${DatabaseHelper.SESSION_ID}='$id'"
+        db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
+    }
+
+    // updates session rest session id property
+    fun updateSessionRestId(id: Long, restSessionId: String) {
+        val contentValues = ContentValues()
+        contentValues.put(DatabaseHelper.SESSION_REST_ID, restSessionId)
+        val where = "${DatabaseHelper.SESSION_ID}='$id'"
+        db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
+    }
+
+    // updates session synced property
+    fun updateSessionSynced(id: Long, synced: Int) {
+        val contentValues = ContentValues()
+        contentValues.put(DatabaseHelper.SESSION_SYNCED, synced)
         val where = "${DatabaseHelper.SESSION_ID}='$id'"
         db.update(DatabaseHelper.SESSION_TABLE_NAME, contentValues, where, null)
     }

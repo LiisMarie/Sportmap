@@ -12,4 +12,8 @@
     <color name="colorStartButton">#9ccc65</color>
     <color name="colorStopButton">#e57373</color>
 
+    <color name="colorDisabledButton">#bebebe</color>
+
+    <color name="colorWhiteText">#FFFAFA</color>
+
 </resources>

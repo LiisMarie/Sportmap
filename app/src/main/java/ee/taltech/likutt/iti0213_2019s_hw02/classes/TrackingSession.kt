@@ -9,7 +9,8 @@ class TrackingSession(var id: Long,
                       var distance: Float,
                       var minSpeed: Double,
                       var maxSpeed: Double,
-                      var synced: Int
+                      var synced: Int,
+                      var restSessionId: String?
 ) {
 
     override fun toString(): String {

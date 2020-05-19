@@ -96,6 +96,8 @@
     <string name="recycler_old_session_button_send">Send</string>
     <string name="recycler_old_session_button_edit">Edit</string>
     <string name="recycler_old_session_button_delete">Delete</string>
+    <string name="recycler_old_session_button_synced_text_synced">Synced</string>
+    <string name="recycler_old_session_button_synced_text_sync">Sync</string>
     <string name="recycler_old_session_text_view_recorded_at">Recorded at:</string>
 
 </resources>

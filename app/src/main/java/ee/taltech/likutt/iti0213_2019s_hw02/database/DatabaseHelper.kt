@@ -26,6 +26,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val SESSION_MIN_SPEED = "minSpeed"
         const val SESSION_MAX_SPEED = "maxSpeed"
         const val SESSION_SYNCED = "synced"
+        const val SESSION_REST_ID = "restId"
 
         // columns for location table
         const val LOCATION_ID = "_id"
@@ -36,6 +37,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val LOCATION_TYPE = "type"  // LOC or CP
         const val LOCATION_SPEED = "speed"  // speed from previous location to current one
         const val LOCATION_SYNCED = "synced"
+        const val LOCATION_ACCURACY = "accuracy"
+        const val LOCATION_ALTITUDE = "altitude"
+        const val LOCATION_VERTICAL_ACCURACY = "verticalAccuracy"
+
+
 
         // columns for account table
         const val ACCOUNT_ID = "_id"
@@ -63,7 +69,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         "$SESSION_DISTANCE REAL NOT NULL, " +
                         "$SESSION_MIN_SPEED REAL NOT NULL, " +
                         "$SESSION_MAX_SPEED REAL NOT NULL, " +
-                        "$SESSION_SYNCED INTEGER NOT NULL" +
+                        "$SESSION_SYNCED INTEGER NOT NULL, " +
+                        "$SESSION_REST_ID STRING" +
                         ");"
         const val SQL_DELETE_TABLE_SESSION = "DROP TABLE IF EXISTS $SESSION_TABLE_NAME"
 
@@ -77,7 +84,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         "$LOCATION_SESSION_ID TEXT NOT NULL, " +
                         "$LOCATION_TYPE TEXT NOT NULL, " +
                         "$LOCATION_SPEED REAL, " +
-                        "$LOCATION_SYNCED INTEGER NOT NULL" +
+                        "$LOCATION_SYNCED INTEGER NOT NULL, " +
+                        "$LOCATION_ACCURACY REAL NOT NULL, " +
+                        "$LOCATION_ALTITUDE REAL NOT NULL, " +
+                        "$LOCATION_VERTICAL_ACCURACY REAL" +
                         ");"
         const val SQL_DELETE_TABLE_LOCATION = "DROP TABLE IF EXISTS $LOCATION_TABLE_NAME"
 

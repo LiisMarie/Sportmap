@@ -15,6 +15,7 @@ class C {
         val LOCATION_UPDATE_ACTION_LATITUDE = "ee.taltech.likutt.location_update.latitude"
         val LOCATION_UPDATE_ACTION_LONGITUDE = "ee.taltech.likutt.location_update.longitude"
         val LOCATION_UPDATE_ACTION_SPEED = "ee.taltech.likutt.location_update.speed"
+        val LOCATION_UPDATE_ACTION_BEARING = "ee.taltech.likutt.location_update.bearing"
 
         val NOTIFICATION_ID = 4321
         val REQUEST_PERMISSIONS_REQUEST_CODE = 34;
@@ -51,8 +52,8 @@ class C {
 
         const val LOCAL_LOCATION_TYPE_START = "start"
         const val LOCAL_LOCATION_TYPE_LOC = "00000000-0000-0000-0000-000000000001"
-        const val LOCAL_LOCATION_TYPE_CP = "00000000-0000-0000-0000-000000000002"
-        const val LOCAL_LOCATION_TYPE_WP = "00000000-0000-0000-0000-000000000003"
+        const val LOCAL_LOCATION_TYPE_WP = "00000000-0000-0000-0000-000000000002"
+        const val LOCAL_LOCATION_TYPE_CP = "00000000-0000-0000-0000-000000000003"
 
         const val REST_BASE_URL = "https://sportmap.akaver.com/api/v1/"
 

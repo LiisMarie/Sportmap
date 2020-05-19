@@ -7,7 +7,10 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.hardware.Sensor
@@ -17,6 +20,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.SensorManager.SENSOR_DELAY_GAME
+import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -38,7 +42,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
-import ee.taltech.likutt.iti0213_2019s_hw02.*
+import ee.taltech.likutt.iti0213_2019s_hw02.BuildConfig
+import ee.taltech.likutt.iti0213_2019s_hw02.R
 import ee.taltech.likutt.iti0213_2019s_hw02.database.Repository
 import ee.taltech.likutt.iti0213_2019s_hw02.helpers.C
 import ee.taltech.likutt.iti0213_2019s_hw02.helpers.Helpers
@@ -151,8 +156,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         mMap.uiSettings.isZoomControlsEnabled = true
         mMap.isMyLocationEnabled = true
 
-        val currentLatLng = LatLng(59.4367, 24.7533)  // todo set another starting point
+        val currentLatLng = LatLng(59.4367, 24.7533)
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in on given loc
+
     }
 
     // ============================================== LIFECYCLE CALLBACKS =============================================
@@ -319,6 +325,30 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
         drawWaypoint(wpLatLng)
         //Toast.makeText(this@MainActivity, "Waypoint updated", Toast.LENGTH_SHORT).show()
+    }
+
+    // for setting bearing value for the map
+    private fun updateCameraBearing(googleMap: GoogleMap?, bearing: Float, latLng: LatLng?) {
+        if (googleMap == null) return
+        if (latLng != null) {
+            val camPos = CameraPosition
+                    .builder(
+                            googleMap.cameraPosition // current Camera
+                    )
+                    .target(latLng)
+                    .bearing(bearing)
+                    .build()
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos))
+        } else {
+            val camPos = CameraPosition
+                    .builder(
+                            googleMap.cameraPosition // current Camera
+                    )
+                    .bearing(bearing)
+                    .build()
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos))
+        }
+
     }
 
     // ============================================== NOTIFICATION CHANNEL CREATION =============================================
@@ -494,7 +524,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     private fun buttonDirectionOnClick() {
         Log.d(TAG, "buttonDirectionOnClick " + buttonDirection.text)
-        // todo logic
         when (buttonDirection.text) {
             getString(R.string.activity_main_button_direction_text_north_up) -> {
                 buttonDirection.text = getString(R.string.activity_main_button_direction_text_direction_up)
@@ -558,7 +587,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         if (mapCentered) { makeMapCentered() }
         else { makeMapNotCentered() }
 
-        // todo logic behind this
         when (mapDirection) {
             getString(R.string.activity_main_button_direction_text_north_up) -> {
                 buttonDirection.text = getString(R.string.activity_main_button_direction_text_north_up)
@@ -680,6 +708,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     }
 
     // ============================================== BROADCAST RECEIVER =============================================
+
+    private var currentLatLng : LatLng? = null
+
     private inner class InnerBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // intent has been received
@@ -691,14 +722,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                     if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() &&
                         !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
-                        val currentLatLng = LatLng(intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0), intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0))
-                        if (mapCentered) {
-                            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
-                            mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
-                        }
+                        currentLatLng = LatLng(intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0), intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0))
 
                         if (prevLatLng != null && !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
-                            makePolylineBetweenTwoPlaces(currentLatLng, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_SPEED, Double.NaN))
+                            makePolylineBetweenTwoPlaces(currentLatLng!!, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_SPEED, Double.NaN))
                         }
                         prevLatLng = currentLatLng
                     }
@@ -706,6 +733,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 }
 
                 if (C.STATISTICS_UPDATE_ACTION == intent.action){
+
+                    if (mapCentered && currentLatLng != null) {
+                        //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
+                    }
+
+                    if (mapDirection == getString(R.string.activity_main_button_direction_text_north_up)) {
+
+                        if (!mapCentered) {
+                            updateCameraBearing(mMap, 0f, null)
+                        } else {
+                            updateCameraBearing(mMap, 0f, currentLatLng)
+                        }
+
+                    } else if (mapDirection == getString(R.string.activity_main_button_direction_text_direction_up)) {
+                        // todo
+                    }
+
                     updateUI(intent)
 
                     if (!intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN).isNaN() &&
