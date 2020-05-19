@@ -49,6 +49,7 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
     // for backend
     private var mJwt: String? = null
     private var trackingSessionId: String? = null
+    private var unsyncedLocations = arrayListOf<TrackingLocation>()  // stores unsynced locations
 
     // opening views
     private val inflater: LayoutInflater = LayoutInflater.from(context)
@@ -144,7 +145,7 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                     val gpxString = generateGpx(session)
                     val fileName = session.recordedAt
 
-                    val tempFile = File.createTempFile(fileName, ".gpx", context!!.externalCacheDir)
+                    val tempFile = File.createTempFile(fileName, ".gpx", context.externalCacheDir)
                     val fw = FileWriter(tempFile)
 
                     fw.write(gpxString)
@@ -214,121 +215,78 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                 .setNegativeButton("NO", null).show()
     }
 
-    // syncing session
+    //         syncing an old session         //
     private fun syncSession(session: TrackingSession, user: User, holder: ViewHolder) {
+        // firstly check if there's internet connection
         if (isNetworkAvailable()) {
-            getRestToken(user, session, holder)
-
-            /*
-            Log.d(TAG, "mJwt    " + mJwt)
-
-            if (mJwt != null) {
-                if (session.restSessionId == "") {
-                    startRestTrackingSession(session)
-                }
-
-                Log.d(TAG, "SESSION ID    " + trackingSessionId)
-                val locations = repo.getLocationsForGivenSession(session.id)
-                if (locations != null) {
-                    for (location in locations) {
-                        if (location.synced != C.SYNCING_SYNCED) {
-                            saveRestLocation(location)
+            val locations = repo.getLocationsForGivenSession(session.id)
+            if (locations != null) {
+                for (location in locations) {
+                    // save all unsynced locations in list
+                    if (location.synced != C.SYNCING_SYNCED) {
+                        //Log.d(TAG, "UNSYNCED LOCATION " + location)
+                        if (location.type == C.LOCAL_LOCATION_TYPE_START) {
+                            location.type = C.LOCAL_LOCATION_TYPE_LOC
                         }
-                    }
-
-                    var allSynced = true
-                    for (location in locations) {
-                        if (location.synced != C.SYNCING_SYNCED) {
-                            allSynced = false
-                        }
-                    }
-
-                    if (allSynced) {
-                        repo.updateSessionSynced(session.id, C.SYNCING_SYNCED)
-                        holder.itemView.buttonSynced.text = "SYNCED"
-                        holder.itemView.buttonSynced.setBackgroundColor(ContextCompat.getColor(context, R.color.colorDisabledButton))
-                        Toast.makeText(context, "Syncing was successful!", Toast.LENGTH_SHORT).show()
+                        unsyncedLocations.add(location)
                     }
                 }
-            } else {
-                Toast.makeText(context, "Couldn't sync!", Toast.LENGTH_SHORT).show()
-            }*/
+            }
+
+            // GET REST TOKEN
+            val handler = WebApiSingletonHandler.getInstance(context)
+
+            val requestJsonParameters = JSONObject()
+            requestJsonParameters.put("email", user.email)
+            requestJsonParameters.put("password", user.password)
+
+            val httpRequest = JsonObjectRequest(
+                    Request.Method.POST,
+                    C.REST_BASE_URL + "account/login",
+                    requestJsonParameters,
+                    Response.Listener { response ->
+                        mJwt = response.getString("token")
+
+                        if (session.restSessionId == "") {
+                            // after receiving rest token, init a new tracking session
+                            startRestTrackingSession(session, holder)
+                        } else {
+                            // after receiving rest token, sync unsynced locations
+                            trackingSessionId = session.restSessionId
+                            syncLocations(holder, session)
+                        }
+
+                    },
+                    Response.ErrorListener { _ ->
+                    }
+            )
+
+            handler.addToRequestQueue(httpRequest)
         } else {
             Toast.makeText(context, "Make sure that You have internet connection!", Toast.LENGTH_SHORT).show()
         }
 
     }
 
-    private fun getRestToken(user: User, session: TrackingSession, holder: ViewHolder) {
-        val handler = WebApiSingletonHandler.getInstance(context)
-
-        val requestJsonParameters = JSONObject()
-        requestJsonParameters.put("email", user.email)
-        requestJsonParameters.put("password", user.password)
-
-        val httpRequest = JsonObjectRequest(
-                Request.Method.POST,
-                C.REST_BASE_URL + "account/login",
-                requestJsonParameters,
-                Response.Listener { response ->
-                    mJwt = response.getString("token")
-
-
-
-
-
-
-                    /*
-
-                     */
-                    Log.d(TAG, "mJwt    " + mJwt)
-
-                    if (session.restSessionId == "") {
-                        startRestTrackingSession(session, holder)
-                    } else {
-                        syncLocations(session, holder)
-                    }
-
-
-
-
-
-
-
-                },
-                Response.ErrorListener { error ->
-                }
-        )
-
-        handler.addToRequestQueue(httpRequest)
-    }
-
-    private fun syncLocations(session: TrackingSession, holder: ViewHolder) {
-        Log.d(TAG, "SESSION ID    " + trackingSessionId)
-        val locations = repo.getLocationsForGivenSession(session.id)
-        if (locations != null) {
-            for (location in locations) {
-                if (location.synced != C.SYNCING_SYNCED) {
-                    saveRestLocation(location)
-                }
-            }
-
-            var allSynced = true
-            for (location in locations) {
-                if (location.synced != C.SYNCING_SYNCED) {
-                    allSynced = false
-                }
-            }
-
-            if (allSynced) {
-                repo.updateSessionSynced(session.id, C.SYNCING_SYNCED)
-                holder.itemView.buttonSynced.text = "SYNCED"
-                holder.itemView.buttonSynced.setBackgroundColor(ContextCompat.getColor(context, R.color.colorDisabledButton))
-                Toast.makeText(context, "Syncing was successful!", Toast.LENGTH_SHORT).show()
+    // goes through all unsynced locations and send them to back
+    private fun syncLocations(holder: ViewHolder, session: TrackingSession) {
+        for (location in unsyncedLocations) {
+            if (location.synced != C.SYNCING_SYNCED) {
+                //Log.d(TAG, "UNSYNCED LOCATION " + location)
+                holder.itemView.buttonSynced.text = "SYNCING"
+                saveRestLocation(location, holder, session)
             }
         }
     }
 
+    // if syncing is successful let user know and update information about it in local database too
+    private fun syncingFinished(holder: ViewHolder, session: TrackingSession) {
+        holder.itemView.buttonSynced.text = "SYNCED"
+        holder.itemView.buttonSynced.setBackgroundColor(ContextCompat.getColor(context, R.color.colorDisabledButton))
+        repo.updateSessionSynced(session.id, C.SYNCING_SYNCED)
+    }
+
+    // starts a new tracking session in back
     private fun startRestTrackingSession(session: TrackingSession, holder: ViewHolder) {
         val handler = WebApiSingletonHandler.getInstance(context)
         val requestJsonParameters = JSONObject()
@@ -344,11 +302,12 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                 C.REST_BASE_URL + "GpsSessions",
                 requestJsonParameters,
                 Response.Listener { response ->
+                    // save new sessions id in local database, sync unsynced locations
                     trackingSessionId = response.getString("id")
-
-                    syncLocations(session, holder)
+                    repo.updateSessionRestId(session.id, trackingSessionId!!)
+                    syncLocations(holder, session)
                 },
-                Response.ErrorListener { error ->
+                Response.ErrorListener { _ ->
                 }
         ) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -363,8 +322,8 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         handler.addToRequestQueue(httpRequest)
     }
 
-    private fun saveRestLocation(location: TrackingLocation) {
-
+    // save location in back
+    private fun saveRestLocation(location: TrackingLocation, holder: ViewHolder, session: TrackingSession) {
         val handler = WebApiSingletonHandler.getInstance(context)
         val requestJsonParameters = JSONObject()
 
@@ -383,10 +342,18 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                 Method.POST,
                 C.REST_BASE_URL + "GpsLocations",
                 requestJsonParameters,
-                Response.Listener { response ->
+                Response.Listener { _ ->
+                    // update info in local database, remove location from list of unsynced locs
                     repo.updateLocationsSynced(location.id, C.SYNCING_SYNCED)
+                    unsyncedLocations.remove(location)
+
+                    // if all locations have been synced then syncing is finished
+                    if (unsyncedLocations.isEmpty()) {
+                        syncingFinished(holder, session)
+                    }
                 },
                 Response.ErrorListener { error ->
+                    Log.d(TAG, error.toString())
                 }
         ) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -401,6 +368,7 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
         handler.addToRequestQueue(httpRequest)
     }
 
+    // returns boolean whether network is available or not
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo

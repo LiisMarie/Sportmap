@@ -20,7 +20,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.SensorManager.SENSOR_DELAY_GAME
-import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -749,6 +748,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                     } else if (mapDirection == getString(R.string.activity_main_button_direction_text_direction_up)) {
                         // todo
+
+                        if (currentLatLng != null && prevLatLng != null) {
+                            val bearing  = bearingBetweenLocations(currentLatLng!!, prevLatLng!!)
+
+                            if (!mapCentered) {
+                                updateCameraBearing(mMap, 0f, null)
+                            } else {
+                                updateCameraBearing(mMap, 0f, currentLatLng)
+                            }
+                        }
+
                     }
 
                     updateUI(intent)
@@ -778,6 +788,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         }
 
+    }
+
+    private fun bearingBetweenLocations(latLng1: LatLng, latLng2: LatLng): Double {
+        val PI = 3.14159
+        val lat1 = latLng1.latitude * PI / 180
+        val long1 = latLng1.longitude * PI / 180
+        val lat2 = latLng2.latitude * PI / 180
+        val long2 = latLng2.longitude * PI / 180
+        val dLon = long2 - long1
+        val y = Math.sin(dLon) * Math.cos(lat2)
+        val x = Math.cos(lat1) * Math.sin(lat2) - (Math.sin(lat1)
+                * Math.cos(lat2) * Math.cos(dLon))
+        var brng = Math.atan2(y, x)
+        brng = toDegrees(brng)
+        brng = (brng + 360) % 360
+        return brng
     }
 
     // ============================================== COMPASS =============================================
