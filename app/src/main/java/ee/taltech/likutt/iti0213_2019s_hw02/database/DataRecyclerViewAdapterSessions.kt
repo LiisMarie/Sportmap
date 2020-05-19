@@ -4,8 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.os.Environment
-import android.util.Log
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +19,7 @@ import ee.taltech.likutt.iti0213_2019s_hw02.helpers.C
 import ee.taltech.likutt.iti0213_2019s_hw02.helpers.Helpers
 import kotlinx.android.synthetic.main.recycler_old_session.view.*
 import java.io.File
+import java.io.FileWriter
 
 
 class DataRecyclerViewAdapterSessions (val context: Context, private val oldSessions: List<TrackingSession>) :
@@ -94,63 +94,25 @@ class DataRecyclerViewAdapterSessions (val context: Context, private val oldSess
                 .setView(edittext)
                 .setPositiveButton("Export") { _, _ ->
 
-                    // todo implement gpx export
-
                     val email = edittext.text.toString()
 
-                    val emailIntent = Intent(Intent.ACTION_SEND)
-                    emailIntent.type = "text/plain"
-                    emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "GPX file from likutt sportsmap")
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "")
-
                     val gpxString = generateGpx(session)
-                    val fileName = session.recordedAt + " - " + session.id + ".gpx"
+                    val fileName = session.recordedAt
 
-/*
-                    context.openFileOutput(fileName, Context.MODE_PRIVATE).use {
-                        it.write(gpxString.toByteArray())
-                    }
-                    val file = File(context.filesDir, fileName)
-                    val contents = file.readText()
-*/
+                    val tempFile = File.createTempFile(fileName, ".gpx", context!!.externalCacheDir)
+                    val fw = FileWriter(tempFile)
 
-/*
-                    val externalStorage = Environment.getExternalStorageDirectory().absolutePath
-                    val myDirectory = "SportsmapLikutt"
-                    val outputDirectory = File(externalStorage + File.separator + myDirectory)
+                    fw.write(gpxString)
 
-                    if (!outputDirectory.exists()) {
-                        outputDirectory.mkdir()
-                    }
+                    fw.flush()
+                    fw.close()
 
-
-                    val outputFile = File(externalStorage + File.separator + myDirectory + File.separator + fileName)
-                    outputFile.setWritable(true)
-                    outputFile.createNewFile()
-                    outputFile.
-*/
-                    //outputFile.writeText(gpxString)
-
-                    //val filelocation = File(Environment.getExternalStorageDirectory().getAbsolutePath(), fileName)
-                    //val path = Uri.fromFile(filelocation)
-
-                    val textFile = File(Environment.getExternalStorageDirectory(), fileName)
-                    Log.d(TAG, "gpx after textFile")
-                    Log.d(TAG, "gpx after textFile " + textFile.name)
-
-                    //textFile.writeText(gpxString)
-
-
-
-
-                    //Log.d(TAG, "gpx from file " + contents)
-                    //Log.d(TAG, "gpx file name " + file.name)
-
-
-                    //emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(textFile))
-                    //emailIntent.putExtra(Intent.EXTRA_STREAM, file)
-
+                    val mailTo = "mailto:" + email +
+                            "?&subject=" + Uri.encode("GPX file") +
+                            "&body=" + Uri.encode("See attachments")
+                    val emailIntent = Intent(Intent.ACTION_VIEW)
+                    emailIntent.data = Uri.parse(mailTo)
+                    emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(tempFile))
                     context.startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"))
                 }
                 .setNegativeButton("Cancel", null).show()
