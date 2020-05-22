@@ -157,7 +157,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         val currentLatLng = LatLng(59.4367, 24.7533)
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in on given loc
-
     }
 
     // ============================================== LIFECYCLE CALLBACKS =============================================
@@ -289,6 +288,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         locationServiceActive = !locationServiceActive
     }
 
+    // makes compass visible upon map
     private fun makeCompassVisible() {
         compassSet = true
         imageButtonBack.setImageResource(R.drawable.baseline_explore_white_24)
@@ -297,6 +297,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         includeCompass.visibility = View.VISIBLE
     }
 
+    // hides the compass
     private fun makeCompassInvisible() {
         compassSet = false
         imageButtonBack.setImageResource(R.drawable.baseline_explore_off_white_24)
@@ -305,11 +306,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         includeCompass.visibility = View.INVISIBLE
     }
 
+    // map centering
     private fun makeMapCentered() {
         buttonCentered.text = getString(R.string.activity_main_button_centered_text_centered)
         mapCentered = true
     }
 
+    // map not centered
     private fun makeMapNotCentered() {
         buttonCentered.text = getString(R.string.activity_main_button_centered_text_not_centered)
         mapCentered = false
@@ -329,7 +332,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     // for setting bearing value for the map
     private fun updateCameraBearing(googleMap: GoogleMap?, bearing: Float, latLng: LatLng?) {
         if (googleMap == null) return
-        if (latLng != null) {
+        if (latLng != null) {  // if location is provided, use it and move map there
             val camPos = CameraPosition
                     .builder(
                             googleMap.cameraPosition // current Camera
@@ -338,7 +341,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     .bearing(bearing)
                     .build()
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos))
-        } else {
+        } else {  // if no location is provided, use previous camera position
             val camPos = CameraPosition
                     .builder(
                             googleMap.cameraPosition // current Camera
@@ -472,6 +475,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     // ============================================== CLICK HANDLERS =============================================
 
+    // sets on click listeners
     private fun setOnClickListeners() {
         buttonStartStop.setOnClickListener {
             buttonStartStopOnClick()
@@ -493,6 +497,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
     }
 
+    // start/stop button logic
     private fun buttonStartStopOnClick() {
         Log.d(TAG, "buttonStartStopOnClick. locationServiceActive: $locationServiceActive")
         // try to start/stop the background service
@@ -508,19 +513,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         } else {
             startTracking()
         }
-
     }
 
+    // add new waypoint button logic
     private fun buttonWPOnClick() {
         Log.d(TAG, "buttonWPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_WP))
     }
 
+    // add new checkpoint button logic
     private fun buttonCPOnClick() {
         Log.d(TAG, "buttonCPOnClick")
         sendBroadcast(Intent(C.NOTIFICATION_ACTION_CP))
     }
 
+    // centered/not centered button logic
     private fun buttonCenteredOnClick() {
         Log.d(TAG, "buttonCenteredOnClick " + buttonCentered.text)
         if (!mapCentered) {
@@ -530,6 +537,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
     }
 
+    // north-up/direction-up/user chosen up  button logic
     private fun buttonDirectionOnClick() {
         Log.d(TAG, "buttonDirectionOnClick " + buttonDirection.text)
         when (buttonDirection.text) {
@@ -549,6 +557,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     }
 
+    // compass button logic
     private fun buttonCompassOnClick() {
         Log.d(TAG, "buttonCompassOnClick " + compassSet)
         if (compassSet) {
@@ -558,12 +567,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         }
     }
 
+    // menu button logic
     private fun buttonMenuOnClick() {
         Log.d(TAG, "buttonMenuOnClick")
         val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
     }
 
+    // settings button logic
     private fun buttonSettingsOnClick() {
         Log.d(TAG, "buttonSettingsOnClick")
         val intent = Intent(this, SettingsActivity::class.java)
@@ -571,6 +582,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         startActivity(intent)
     }
 
+    //  logic for handling UI related to tracking
     fun dealWithTracking() {
         if (trackingSet) {
             buttonStartStop.text = getString(R.string.activity_main_button_startstop_text_stop)
@@ -728,10 +740,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                 if (C.LOCATION_UPDATE_ACTION == intent.action){
                     trackingSet = true
 
-                    if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() &&
-                        !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
+                    if (!intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, Double.NaN).isNaN() && !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
+
                         currentLatLng = LatLng(intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LATITUDE, 0.0), intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, 0.0))
 
+                        // if this isn't the very first received location
                         if (prevLatLng != null && !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
                             makePolylineBetweenTwoPlaces(currentLatLng!!, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_SPEED, Double.NaN))
 
@@ -745,6 +758,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                                 }
                             }
                         }
+                        // set new latLng as previous one
                         prevLatLng = currentLatLng
                     }
                 }
@@ -770,23 +784,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                     updateUI(intent)
 
-                    if (!intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN).isNaN() &&
-                        !intent.getDoubleExtra(C.CURRENT_WP_LONGITUDE, Double.NaN).isNaN()) {
-
+                    // new wp was added
+                    if (!intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN).isNaN() && !intent.getDoubleExtra(C.CURRENT_WP_LONGITUDE, Double.NaN).isNaN()) {
                         handleNewWaypoint(LatLng(intent.getDoubleExtra(C.CURRENT_WP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.CURRENT_WP_LONGITUDE, Double.NaN)))
                     }
 
-                    if (!intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN).isNaN() &&
-                        !intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN).isNaN()) {
-
+                    // new cp was added
+                    if (!intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN).isNaN() && !intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN).isNaN()) {
                         drawCheckpoint(LatLng(intent.getDoubleExtra(C.NEW_CP_LATITUDE, Double.NaN), intent.getDoubleExtra(C.NEW_CP_LONGITUDE, Double.NaN)))
                     }
 
-                    if (!mapUpdated) {
+                    if (!mapUpdated) {  // if map hasn't been updated then do it
                         mapUpdated = true
-
                         restoreMap(intent)
-
                         trackingSet = true
                         dealWithTracking()
                     }
@@ -846,7 +856,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             output[i] = output[i] + alpha * (input[i] - output[i])
         }
     }
-
-
-
 }
