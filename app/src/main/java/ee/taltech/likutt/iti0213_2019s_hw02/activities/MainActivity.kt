@@ -49,7 +49,8 @@ import ee.taltech.likutt.iti0213_2019s_hw02.helpers.Helpers
 import ee.taltech.likutt.iti0213_2019s_hw02.helpers.LocationService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.track_control.*
-import java.lang.Math.*
+import java.lang.Math.toDegrees
+import java.lang.Math.toRadians
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
@@ -155,8 +156,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         mMap.uiSettings.isZoomControlsEnabled = true
         mMap.isMyLocationEnabled = true
 
-        val currentLatLng = LatLng(59.4367, 24.7533)
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in on given loc
+        val startLatLng = LatLng(54.5260, 15.2551)
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(startLatLng))  // moves camera to given location
     }
 
     // ============================================== LIFECYCLE CALLBACKS =============================================
@@ -757,6 +758,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                                     updateCameraBearing(mMap, bearing, currentLatLng)
                                 }
                             }
+                        } else {  // if it's the first location, zoom in there
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17F))  // zooms in on given loc
                         }
                         // set new latLng as previous one
                         prevLatLng = currentLatLng
