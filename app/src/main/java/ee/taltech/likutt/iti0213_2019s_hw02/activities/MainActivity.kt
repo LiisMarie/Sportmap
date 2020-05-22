@@ -49,7 +49,7 @@ import ee.taltech.likutt.iti0213_2019s_hw02.helpers.Helpers
 import ee.taltech.likutt.iti0213_2019s_hw02.helpers.LocationService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.track_control.*
-import java.lang.Math.toDegrees
+import java.lang.Math.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
@@ -347,7 +347,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
                     .build()
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos))
         }
+    }
 
+    // calculates bearing between 2 locations, necessary for direction-up mode
+    private fun bearingBetweenLocations(fromLatLng: LatLng, toLatLng: LatLng): Float {
+        val phi1 = toRadians(fromLatLng.latitude)
+        val phi2 = toRadians(toLatLng.latitude)
+        val deltaLambda = toRadians(toLatLng.longitude - fromLatLng.longitude)
+
+        val theta: Double = kotlin.math.atan2(kotlin.math.sin(deltaLambda) * kotlin.math.cos(phi2), kotlin.math.cos(phi1) * kotlin.math.sin(phi2) - kotlin.math.sin(phi1) * kotlin.math.cos(phi2) * kotlin.math.cos(deltaLambda))
+        return toDegrees(theta).toFloat()
     }
 
     // ============================================== NOTIFICATION CHANNEL CREATION =============================================
@@ -425,12 +434,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         Log.i(TAG, "onRequestPermissionResult")
         if (requestCode === C.REQUEST_PERMISSIONS_REQUEST_CODE) {
             when {
-                grantResults.count() <= 0 -> { // If user interaction was interrupted, the permission request is cancelled and you
+                grantResults.count() <= 0 -> {  // If user interaction was interrupted, the permission request is cancelled and you
                     // receive empty arrays.
                     Log.i(TAG, "User interaction was cancelled.")
                     Toast.makeText(this, "User interaction was cancelled.", Toast.LENGTH_SHORT).show()
                 }
-                grantResults[0] === PackageManager.PERMISSION_GRANTED -> {// Permission was granted.
+                grantResults[0] === PackageManager.PERMISSION_GRANTED -> {  // Permission was granted.
                     Log.i(TAG, "Permission was granted")
                     Toast.makeText(this, "Permission was granted", Toast.LENGTH_SHORT).show()
                 }
@@ -725,38 +734,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                         if (prevLatLng != null && !intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_LONGITUDE, Double.NaN).isNaN()) {
                             makePolylineBetweenTwoPlaces(currentLatLng!!, prevLatLng!!, intent.getDoubleExtra(C.LOCATION_UPDATE_ACTION_SPEED, Double.NaN))
+
+                            // DIRECTION-UP logic
+                            if (mapDirection == getString(R.string.activity_main_button_direction_text_direction_up)) {
+                                val bearing  = bearingBetweenLocations(prevLatLng!!, currentLatLng!!)
+                                if (!mapCentered) {
+                                    updateCameraBearing(mMap, bearing, null)
+                                } else {
+                                    updateCameraBearing(mMap, bearing, currentLatLng)
+                                }
+                            }
                         }
                         prevLatLng = currentLatLng
                     }
-
                 }
 
                 if (C.STATISTICS_UPDATE_ACTION == intent.action){
 
-                    if (mapCentered && currentLatLng != null) {
+                    // just centered map
+                    if (mapCentered && currentLatLng != null && mapDirection != getString(R.string.activity_main_button_direction_text_direction_up)) {
                         //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))  // zooms in to cur loc
                         mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
                     }
 
+                    // NORTH-UP logic
                     if (mapDirection == getString(R.string.activity_main_button_direction_text_north_up)) {
 
                         if (!mapCentered) {
                             updateCameraBearing(mMap, 0f, null)
                         } else {
                             updateCameraBearing(mMap, 0f, currentLatLng)
-                        }
-
-                    } else if (mapDirection == getString(R.string.activity_main_button_direction_text_direction_up)) {
-                        // todo
-
-                        if (currentLatLng != null && prevLatLng != null) {
-                            val bearing  = bearingBetweenLocations(currentLatLng!!, prevLatLng!!)
-
-                            if (!mapCentered) {
-                                updateCameraBearing(mMap, 0f, null)
-                            } else {
-                                updateCameraBearing(mMap, 0f, currentLatLng)
-                            }
                         }
 
                     }
@@ -788,22 +795,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
         }
 
-    }
-
-    private fun bearingBetweenLocations(latLng1: LatLng, latLng2: LatLng): Double {
-        val PI = 3.14159
-        val lat1 = latLng1.latitude * PI / 180
-        val long1 = latLng1.longitude * PI / 180
-        val lat2 = latLng2.latitude * PI / 180
-        val long2 = latLng2.longitude * PI / 180
-        val dLon = long2 - long1
-        val y = Math.sin(dLon) * Math.cos(lat2)
-        val x = Math.cos(lat1) * Math.sin(lat2) - (Math.sin(lat1)
-                * Math.cos(lat2) * Math.cos(dLon))
-        var brng = Math.atan2(y, x)
-        brng = toDegrees(brng)
-        brng = (brng + 360) % 360
-        return brng
     }
 
     // ============================================== COMPASS =============================================
