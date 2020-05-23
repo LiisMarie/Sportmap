@@ -725,6 +725,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
                 i += 1
             }
+
+            if (locations.isNotEmpty()) {
+                if (mapCentered) {
+                    currentLatLng = LatLng(locations[locations.size-1].latitude, locations[locations.size-1].longitude)
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(currentLatLng))
+                }
+            }
         }
     }
 

@@ -107,6 +107,9 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
         // gets map of speeds and colors for coloring the track
         val colorMap = Helpers.generateColorsForSpeeds(session!!.minSpeed, session!!.maxSpeed)
 
+        // for storing locations as latlngs, needed for moving camera to correct location
+        val latLngs = ArrayList<LatLng>()
+
         // goes through all locations and draws them on the map
         var i = 0
         var prevLoc : LatLng? = null
@@ -114,11 +117,12 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
             val loc = locations[i]
 
             val curLatLng = LatLng(loc.latitude, loc.longitude)
+            latLngs.add(curLatLng)
 
             // different actions are needed based on what kind of locations is
             when (loc.type) {
                 C.LOCAL_LOCATION_TYPE_START -> {
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLatLng, 17f))  // zooms in on start location
+                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLatLng, 17f))  // zooms in on start location
                     drawStart(curLatLng)
                     prevLoc = curLatLng
                 }
@@ -146,9 +150,9 @@ class ViewOldSessionActivity : AppCompatActivity(), OnMapReadyCallback {
             i += 1
         }
 
-        /*mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(
-                LatLngBounds(LatLng(locations[0].latitude, locations[0].longitude),
-                        LatLng(locations[locations.size-1].latitude, locations[locations.size-1].longitude)), 0))*/
+        // moving camera to make he whole track visible on screen
+        val latLngBound = latLngs.fold ( LatLngBounds.builder(), { builder, it -> builder.include(it) } ).build()
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBound, 150))
     }
 
     // different start point
