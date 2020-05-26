@@ -67,7 +67,7 @@ Sessions history - not logged in | Sessions history - logged in | Sessions histo
 
 Old session - view | Old session - edit | Old session - export | Old session - delete
 ------------ | ------------- | ------------- | -------------
-<img src="Pictures/session_load.png" height="550px"> | <img src="Pictures/session_edit.png" height="550px"> | <img src="Pictures/session_export.png" height="550px"> | <img src="Pictures/session_delete.png" height="550px">
+<img src="Pictures/session_load.png" height="450px"> | <img src="Pictures/session_edit.png" height="450px"> | <img src="Pictures/session_export.png" height="450px"> | <img src="Pictures/session_delete.png" height="450px">
 
 
 Screenshots from Pixel 3 XL
